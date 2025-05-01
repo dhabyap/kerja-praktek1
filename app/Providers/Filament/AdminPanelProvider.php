@@ -2,16 +2,15 @@
 
 namespace App\Providers\Filament;
 
-use Filament\Pages;
 use Filament\Panel;
-use Filament\Widgets;
+use Filament\Pages;
 use Filament\PanelProvider;
 use Filament\Pages\Dashboard;
 use Filament\Support\Colors\Color;
-use Filament\Widgets\AccountWidget;
-use Illuminate\Support\Facades\Auth;
 use Filament\Navigation\NavigationItem;
 use Filament\Navigation\NavigationGroup;
+use Filament\Facades\Filament;
+use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
 use Filament\Http\Middleware\Authenticate;
 use Illuminate\Session\Middleware\StartSession;
@@ -33,14 +32,20 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->homeUrl('/admin/dashboard')
             ->colors([
                 'primary' => Color::Amber,
             ])
+            ->pages([
+                Pages\Dashboard::class,
+            ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
-            ->pages([Pages\Dashboard::class])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
-            ->widgets([Widgets\AccountWidget::class, Widgets\FilamentInfoWidget::class])
+            ->widgets([
+                AccountWidget::class,
+                FilamentInfoWidget::class,
+            ])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -54,62 +59,18 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ])
+            // ->navigationItems($this->getCustomNavigationItems())
+        ;
     }
 
-    public function registerNavigationItems(): array
-    {
-        $user = Auth::user();
 
-        if (!$user) {
-            return [];
-        }
+    // protected function getCustomNavigationItems(): array
+    // {
+    //     $user = Auth::user();
+    //     \Log::info('User level ID: ' . optional($user)->level_id);
 
-        if ($user->level_id == 1) {
-            return [
-                NavigationGroup::make('Management')
-                    ->items([
-                        NavigationItem::make('Dashboard')
-                            ->url(route('filament.admin.pages.dashboard'))
-                            ->icon('heroicon-o-home'),
-                        NavigationItem::make('Users')
-                            ->url('/admin/users')
-                            ->icon('heroicon-o-user-group'),
-                        NavigationItem::make('Apartments')
-                            ->url('/admin/appartements')
-                            ->icon('heroicon-o-building-office'),
-                        NavigationItem::make('Transactions')
-                            ->url('/admin/transactions')
-                            ->icon('heroicon-o-currency-dollar'),
-                    ]),
-            ];
-        } elseif ($user->level_id == 2) { // Admin Global
-            return [
-                NavigationGroup::make('Data Management')
-                    ->items([
-                        NavigationItem::make('Dashboard')
-                            ->url(route('filament.admin.pages.dashboard'))
-                            ->icon('heroicon-o-home'),
-                        NavigationItem::make('Transactions')
-                            ->url('/admin/transactions')
-                            ->icon('heroicon-o-currency-dollar'),
-                    ]),
-            ];
-        } elseif ($user->level_id == 3) { // Admin Lokal
-            return [
-                NavigationGroup::make('Local Data')
-                    ->items([
-                        NavigationItem::make('Dashboard')
-                            ->url(route('filament.admin.pages.dashboard'))
-                            ->icon('heroicon-o-home'),
-                        NavigationItem::make('My Bookings')
-                            ->url('/admin/bookings')
-                            ->icon('heroicon-o-calendar'),
-                    ]),
-            ];
-        }
-
-        return [];
-    }
+    //     // lanjut dengan kode sebelumnya...
+    // }
 
 }

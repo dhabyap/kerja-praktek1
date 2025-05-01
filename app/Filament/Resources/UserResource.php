@@ -13,17 +13,33 @@ use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Filament\Tables\Columns\Column;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 
 use Filament\Forms\Components\Select;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use App\Filament\Resources\UserResource\Pages;
 
+
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        if (auth()->user()->can('admin-local')) {
+            return $query->whereHas('unit', function ($q) {
+                $q->where('appartement_id', auth()->user()->appartement_id);
+            });
+        }
+
+        return $query;
+    }
 
     public static function form(Form $form): Form
     {
@@ -37,7 +53,7 @@ class UserResource extends Resource
                 TextInput::make('email')
                     ->email()
                     ->required()
-                    ->unique(ignoreRecord: true), // ✅ Email harus unique
+                    ->unique(ignoreRecord: true),
 
                 Select::make('level_id')
                     ->relationship('level', 'nama')
@@ -110,5 +126,25 @@ class UserResource extends Resource
             'create' => Pages\CreateUser::route('/create'),
             'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
+    }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->can('admin-global') || auth()->user()->can('super-admin');
+    }
+
+    public static function canCreate(): bool
+    {
+        return auth()->user()->can('super-admin') || auth()->user()->can('admin-global');
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return auth()->user()->can('super-admin');
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return auth()->user()->can('super-admin');
     }
 }

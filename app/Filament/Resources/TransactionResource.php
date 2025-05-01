@@ -25,18 +25,19 @@ class TransactionResource extends Resource
 {
     protected static ?string $model = Transaction::class;
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';
-    public static function getEloquentQuery(): Builder
-    {
-        $query = parent::getEloquentQuery();
+    // public static function getEloquentQuery(): Builder
+    
+    // {
+    //     $query = parent::getEloquentQuery();
 
-        if (auth()->user()->can('admin-local')) {
-            return $query->whereHas('unit', function ($q) {
-                $q->where('appartement_id', auth()->user()->appartement_id);
-            });
-        }
+    //     if (auth()->user()->can('admin-local')) {
+    //         return $query->whereHas('unit', function ($q) {
+    //             $q->where('appartement_id', auth()->user()->appartement_id);
+    //         });
+    //     }
 
-        return $query;
-    }
+    //     return $query;
+    // }
 
     public static function form(Form $form): Form
     {
@@ -124,25 +125,25 @@ class TransactionResource extends Resource
         ];
     }
 
-    public static function canViewAny(): bool
-    {
-        return auth()->user()->can('admin-global') || auth()->user()->can('super-admin');
-    }
+    // public static function canViewAny(): bool
+    // {
+    //     return auth()->user()->can('admin-global') || auth()->user()->can('super-admin') || auth()->user()->can('super');
+    // }
 
-    public static function canCreate(): bool
-    {
-        return auth()->user()->can('super-admin');
-    }
+    // public static function canCreate(): bool
+    // {
+    //     return auth()->user()->can('super-admin');
+    // }
 
-    public static function canEdit(Model $record): bool
-    {
-        return auth()->user()->can('super-admin');
-    }
+    // public static function canEdit(Model $record): bool
+    // {
+    //     return auth()->user()->can('super-admin');
+    // }
 
-    public static function canDelete(Model $record): bool
-    {
-        return auth()->user()->can('super-admin');
-    }
+    // public static function canDelete(Model $record): bool
+    // {
+    //     return auth()->user()->can('super-admin');
+    // }
 
 
 }
