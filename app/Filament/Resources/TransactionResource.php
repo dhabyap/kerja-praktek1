@@ -2,31 +2,29 @@
 
 namespace App\Filament\Resources;
 
-use App\Models\Booking;
-use Filament\Forms;
+use App\Filament\Resources\TransactionResource\Pages\CreateTransaction;
+use App\Models\Unit;
 use Filament\Tables;
+use App\Models\Booking;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use App\Models\Transaction;
 use Filament\Resources\Resource;
 use Filament\Forms\Components\Select;
 use Filament\Tables\Columns\TextColumn;
+use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\DatePicker;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\TransactionResource\Pages;
-use App\Filament\Resources\TransactionResource\RelationManagers;
-use App\Models\Unit;
+use App\Filament\Resources\TransactionResource\Pages\EditTransaction;
+use App\Filament\Resources\TransactionResource\Pages\ListTransactions;
+use Illuminate\Support\Facades\Log;
+
 
 class TransactionResource extends Resource
 {
     protected static ?string $model = Transaction::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';
-
-
     public static function getEloquentQuery(): Builder
     {
         $query = parent::getEloquentQuery();
@@ -40,21 +38,32 @@ class TransactionResource extends Resource
         return $query;
     }
 
-
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                DatePicker::make('tanggal')->required(),
-                TextInput::make('keterangan'),
-                Select::make('booking_id')->label('Pilih Bookingan')
+                Select::make('booking_id')->label('Pilih Bookingan(Optional)')
                     ->relationship('booking', 'id')
 
                     ->options(function () {
                         return Booking::all()->pluck('kode_booking', 'id');
                     })
                     ->searchable(),
+                DatePicker::make('tanggal')->required(),
+                TextInput::make('keterangan'),
+                Select::make('unit_id')->label('Pilih Unit(Optional)')
+                    ->options(function () {
+                        return Unit::all()->pluck('nama', 'id');
+                    })
+                    ->searchable(),
                 TextInput::make('harga')->numeric()->required(),
+                Select::make('type')
+                    ->label('Pilih Type')
+                    ->options([
+                        'masuk' => 'Masuk',
+                        'keluar' => 'Keluar',
+                    ])
+                    ->required(),
             ]);
     }
 
@@ -70,8 +79,21 @@ class TransactionResource extends Resource
                 TextColumn::make('kode_invoice')->searchable(),
                 TextColumn::make('tanggal')->date(),
                 TextColumn::make('booking.kode_booking')->label('Kode Booking'),
-                TextColumn::make('booking.unit.nama')->label('Unit'),
-                TextColumn::make('booking.unit.appartement.nama')->label('Appartement'),
+
+                TextColumn::make('id')
+                    ->label('Unit')
+                    ->formatStateUsing(function ($record) {
+                        return $record->booking?->unit?->nama ?? $record->unit?->nama ?? '-';
+                    }),
+
+                TextColumn::make('created_at')
+                    ->label('Appartement')
+                    ->formatStateUsing(function ($record) {
+                        return $record->booking?->unit?->appartement?->nama ?? $record->unit?->appartement?->nama ?? '-';
+                    }),
+
+                // TextColumn::make('booking.unit.appartement.nama')->label('Appartement') ?? TextColumn::make('unit.appartement.nama')->label('Appartement'),
+
                 TextColumn::make('user.name'),
                 TextColumn::make('harga')->money('IDR'),
                 TextColumn::make('keterangan'),
@@ -96,9 +118,9 @@ class TransactionResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListTransactions::route('/'),
-            'create' => Pages\CreateTransaction::route('/create'),
-            'edit' => Pages\EditTransaction::route('/{record}/edit'),
+            'index' => ListTransactions::route('/'),
+            'create' => CreateTransaction::route('/create'),
+            'edit' => EditTransaction::route('/{record}/edit'),
         ];
     }
 
