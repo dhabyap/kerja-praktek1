@@ -17,8 +17,9 @@ return new class extends Migration {
             $table->string('keterangan');
             $table->foreignId('booking_id')->nullable();
             $table->foreignId('user_id')->constrained();
+            $table->foreignId('unit_id')->nullable();
             $table->integer('harga');
-            $table->enum('type', ['masuk', 'keluar']);
+            $table->enum('type', ['masuk', 'keluar'])->default('masuk');
             $table->timestamps();
         });
     }
