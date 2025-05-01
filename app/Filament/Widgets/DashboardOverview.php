@@ -51,35 +51,4 @@ class DashboardOverview extends BaseWidget
         ];
     }
 
-    // Method untuk membuat grafik transaksi harian per bulan ini
-    protected function getChart(): Chart
-    {
-        $now = Carbon::now();
-        $startOfMonth = $now->copy()->startOfMonth();
-        $endOfMonth = $now->copy()->endOfMonth();
-
-        $dates = [];
-        $transactions = [];
-        $bookings = [];
-
-        // Loop untuk mengambil data transaksi per hari bulan ini
-        for ($date = $startOfMonth; $date <= $endOfMonth; $date->addDay()) {
-            $dates[] = $date->format('d M');
-            $transactions[] = Transaction::whereDate('tanggal', $date)->sum('harga');
-            $bookings[] = Booking::whereDate('tanggal', $date)->count();
-        }
-
-        return Chart::make()
-            ->labels($dates)
-            ->datasets([
-                ChartSeries::make('Transaksi', $transactions)
-                    ->color('green')
-                    ->tooltip('Total Transaksi per Hari'),
-                ChartSeries::make('Booking', $bookings)
-                    ->color('blue')
-                    ->tooltip('Total Booking per Hari'),
-            ])
-            ->height(300);
-    }
-
 }

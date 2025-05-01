@@ -16,24 +16,41 @@ class TransactionChart extends ChartWidget
         $endOfMonth = $now->copy()->endOfMonth();
 
         $labels = [];
-        $data = [];
+        $dataMasuk = [];
+        $dataKeluar = [];
 
         for ($date = $startOfMonth->copy(); $date <= $endOfMonth; $date->addDay()) {
             $labels[] = $date->format('d M');
-            $data[] = Transaction::whereDate('tanggal', $date)->sum('harga');
+
+            $masuk = Transaction::whereDate('tanggal', $date)
+                ->where('type', 'masuk')
+                ->sum('harga');
+
+            $keluar = Transaction::whereDate('tanggal', $date)
+                ->where('type', 'keluar')
+                ->sum('harga');
+
+            $dataMasuk[] = $masuk;
+            $dataKeluar[] = $keluar;
         }
 
         return [
             'labels' => $labels,
             'datasets' => [
                 [
-                    'label' => 'Transaksi',
-                    'data' => $data,
-                    'backgroundColor' => 'rgba(75, 192, 192, 0.6)',
+                    'label' => 'Uang Masuk',
+                    'data' => $dataMasuk,
+                    'backgroundColor' => 'rgba(54, 162, 235, 0.6)', // biru
+                ],
+                [
+                    'label' => 'Uang Keluar',
+                    'data' => $dataKeluar,
+                    'backgroundColor' => 'rgba(255, 99, 132, 0.6)', // merah
                 ],
             ],
         ];
     }
+
 
     protected function getType(): string
     {
