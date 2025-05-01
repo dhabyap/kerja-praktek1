@@ -29,10 +29,10 @@ class AdminPanelProvider extends PanelProvider
     {
         return $panel
             ->default()
+            ->homeUrl('/admin/dashboard')
             ->id('admin')
             ->path('admin')
             ->login()
-            ->homeUrl('/admin/dashboard')
             ->colors([
                 'primary' => Color::Amber,
             ])
