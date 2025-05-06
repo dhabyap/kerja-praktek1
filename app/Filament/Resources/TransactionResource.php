@@ -46,40 +46,47 @@ class TransactionResource extends Resource
     {
         return $form
             ->schema([
-                    // Select::make('booking_id')->label('Pilih Bookingan(Optional)')
-                    //     ->relationship('booking', 'id')
+                // Select::make('booking_id')->label('Pilih Bookingan(Optional)')
+                //     ->relationship('booking', 'id')
 
-                    //     ->options(function () {
-                    //         return Booking::all()->pluck('kode_booking', 'id');
-                    //     })
-                    //     ->searchable(),
-                    DatePicker::make('tanggal')->required(),
-                    Select::make('type')
-                        ->label('Pilih Type')
-                        ->options([
-                                'token' => 'Token dan Air',
-                                'beban' => 'Beban Sewa',
-                                'sewa_unit' => 'Sewa Unit',
-                                'gaji' => 'Gaji',
-                                'lainnya' => 'Lainnya',
-                            ])
-                        ->required(),
+                //     ->options(function () {
+                //         return Booking::all()->pluck('kode_booking', 'id');
+                //     })
+                //     ->searchable(),
+                DatePicker::make('tanggal')->required(),
+                Select::make('type')
+                    ->label('Pilih Type')
+                    ->options([
+                        'token' => 'Token dan Air',
+                        'beban' => 'Beban Sewa',
+                        'sewa_unit' => 'Sewa Unit',
+                        'gaji' => 'Gaji',
+                        'lainnya' => 'Lainnya',
+                    ])
+                    ->required(),
+                Select::make('tipe_pembayaran')
+                    ->label('Pilih Tipe Pembayaran')
+                    ->options([
+                        'cash' => 'Cash',
+                        'transfer' => 'Transfer',
+                    ])
+                    ->required(),
 
-                    Select::make('unit_id')->label('Pilih Unit(Optional)')
-                        ->options(function () {
-                            return Unit::all()->pluck('nama', 'id');
-                        })
-                        ->searchable(),
-                    TextInput::make('harga')->numeric()->required(),
-                    TextInput::make('keterangan'),
+                Select::make('unit_id')->label('Pilih Unit(Optional)')
+                    ->options(function () {
+                        return Unit::all()->pluck('nama', 'id');
+                    })
+                    ->searchable(),
+                TextInput::make('harga')->numeric()->required(),
+                TextInput::make('keterangan'),
 
-                    // Select::make('type')
-                    //     ->label('Pilih Type')
-                    //     ->options([
-                    //         'keluar' => 'Keluar',
-                    //     ])
-                    //     ->required(),
-                ]);
+                // Select::make('type')
+                //     ->label('Pilih Type')
+                //     ->options([
+                //         'keluar' => 'Keluar',
+                //     ])
+                //     ->required(),
+            ]);
     }
 
 
@@ -91,34 +98,36 @@ class TransactionResource extends Resource
                     ->with(['unit.appartement', 'user'])
             )
             ->columns([
-                    TextColumn::make('kode_invoice')->searchable(),
-                    TextColumn::make('tanggal')->date(),
+                TextColumn::make('kode_invoice')->searchable(),
+                TextColumn::make('tanggal')->date(),
 
-                    TextColumn::make('id')
-                        ->label('Unit')
-                        ->formatStateUsing(function ($record) {
-                            return $record->booking?->unit?->nama ?? $record->unit?->nama ?? '-';
-                        }),
+                TextColumn::make('id')
+                    ->label('Unit')
+                    ->formatStateUsing(function ($record) {
+                        return $record->booking?->unit?->nama ?? $record->unit?->nama ?? '-';
+                    }),
 
-                    TextColumn::make('created_at')
-                        ->label('Appartement')
-                        ->formatStateUsing(function ($record) {
-                            return $record->booking?->unit?->appartement?->nama ?? $record->unit?->appartement?->nama ?? '-';
-                        }),
+                TextColumn::make('created_at')
+                    ->label('Appartement')
+                    ->formatStateUsing(function ($record) {
+                        return $record->booking?->unit?->appartement?->nama ?? $record->unit?->appartement?->nama ?? '-';
+                    }),
 
-                    // TextColumn::make('booking.unit.appartement.nama')->label('Appartement') ?? TextColumn::make('unit.appartement.nama')->label('Appartement'),
+                // TextColumn::make('booking.unit.appartement.nama')->label('Appartement') ?? TextColumn::make('unit.appartement.nama')->label('Appartement'),
 
-                    TextColumn::make('user.name'),
-                    TextColumn::make('harga')->money('IDR'),
-                    TextColumn::make('keterangan'),
-                ])
+                TextColumn::make('user.name'),
+                TextColumn::make('harga')->money('IDR'),
+                TextColumn::make('keterangan'),
+                TextColumn::make('tipe_pembayaran')->label('Tipe Pembayaran'),
+
+            ])
             ->filters([])
             ->actions([
-                    Tables\Actions\EditAction::make(),
-                ])
+                Tables\Actions\EditAction::make(),
+            ])
             ->bulkActions([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]);
+                Tables\Actions\DeleteBulkAction::make(),
+            ]);
     }
 
 

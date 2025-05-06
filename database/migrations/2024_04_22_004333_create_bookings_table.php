@@ -22,6 +22,8 @@ return new class extends Migration
             $table->foreignId('unit_id')->constrained();
             $table->foreignId('user_id')->constrained();
             $table->integer('harga');
+            $table->enum('tipe_pembayaran', ['cash','transfer'])->default('cash');
+
             $table->timestamps();
         });
     }
