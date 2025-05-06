@@ -18,4 +18,6 @@ class Unit extends Model
         return $this->belongsTo(Appartement::class);
     }
 
+    
+
 }

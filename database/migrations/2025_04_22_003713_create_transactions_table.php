@@ -14,12 +14,12 @@ return new class extends Migration {
             $table->id();
             $table->string('kode_invoice')->unique();
             $table->date('tanggal');
-            $table->string('keterangan');
-            $table->foreignId('booking_id')->nullable();
+            $table->string('keterangan')->nullable();
+            $table->string('type');
+            // $table->foreignId('booking_id')->nullable();
             $table->foreignId('user_id')->constrained();
             $table->foreignId('unit_id')->nullable();
             $table->integer('harga');
-            $table->enum('type', ['masuk', 'keluar'])->default('masuk');
             $table->timestamps();
         });
     }

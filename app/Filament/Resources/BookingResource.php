@@ -28,6 +28,19 @@ class BookingResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        if (auth()->user()->can('admin-local') || auth()->user()->can('admin-global')) {
+            return $query->whereHas('unit', function ($q) {
+                $q->where('appartement_id', auth()->user()->appartement_id);
+            });
+        }
+
+        return $query;
+    }
+
     public static function form(Form $form): Form
     {
         $user = Filament::auth()->user();
@@ -36,13 +49,13 @@ class BookingResource extends Resource
             ->schema([
                 TextInput::make('nama')->required(),
                 DatePicker::make('tanggal')->required(),
-                TextInput::make('keterangan'),
+                // TextInput::make('keterangan'),
                 Select::make('unit_id')->label('Pilih Unit')
                     ->relationship('unit', 'nama')->options(function () use ($user) {
                         if ($user->level_id === 1) {
                             return Unit::all()->pluck('nama', 'id');
                         } else {
-                            return Unit::where('appartemet_id', $user->appartement_id)->pluck('nama', 'id');
+                            return Unit::where('appartement_id', $user->appartement_id)->pluck('nama', 'id');
                         }
                     })
                     ->required(),
@@ -54,6 +67,13 @@ class BookingResource extends Resource
                         'malam' => 'Malam',
                     ])
                     ->required(),
+                Select::make('keterangan')
+                    ->label('keterangan')
+                    ->options([
+                        'halfday' => 'Halfday',
+                        'fullday' => 'Fullday',
+                    ])
+                    ->required(),
             ]);
     }
 
@@ -61,7 +81,7 @@ class BookingResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('kode_booking'),
+                // TextColumn::make('kode_booking'),
                 TextColumn::make('nama'),
                 TextColumn::make('tanggal')->date(),
                 TextColumn::make('user.name')->label('User'),
@@ -72,17 +92,22 @@ class BookingResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('downloadInvoice')
+                    ->label('Download Invoice')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->url(fn($record) => route('booking.download.invoice', ['booking' => $record->id]))
+                    ->openUrlInNewTab(),
+
             ])
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
             ]);
     }
 
-
     public static function getRelations(): array
     {
         return [
-            TransactionRelationManager::class,
+            // TransactionRelationManager::class,
         ];
     }
 

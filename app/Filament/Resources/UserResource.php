@@ -32,10 +32,8 @@ class UserResource extends Resource
     {
         $query = parent::getEloquentQuery();
 
-        if (auth()->user()->can('admin-local')) {
-            return $query->whereHas('unit', function ($q) {
-                $q->where('appartement_id', auth()->user()->appartement_id);
-            });
+        if (auth()->user()->can('admin-local') || auth()->user()->can('admin-global')) {
+            return $query->where('appartement_id', auth()->user()->appartement_id);
         }
 
         return $query;

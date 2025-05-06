@@ -25,47 +25,61 @@ class TransactionResource extends Resource
 {
     protected static ?string $model = Transaction::class;
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';
-    // public static function getEloquentQuery(): Builder
-    
-    // {
-    //     $query = parent::getEloquentQuery();
+    protected static ?string $navigationLabel = 'Pengeluaran';
 
-    //     if (auth()->user()->can('admin-local')) {
-    //         return $query->whereHas('unit', function ($q) {
-    //             $q->where('appartement_id', auth()->user()->appartement_id);
-    //         });
-    //     }
+    // Jika kamu juga ingin mengubah judul halaman daftar (bukan hanya di sidebar):
+    protected static ?string $pluralModelLabel = 'Pengeluaran';
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
 
-    //     return $query;
-    // }
+        if (auth()->user()->can('admin-local') || auth()->user()->can('admin-global')) {
+            return $query->whereHas('unit', function ($q) {
+                $q->where('appartement_id', auth()->user()->appartement_id);
+            });
+        }
+
+        return $query;
+    }
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Select::make('booking_id')->label('Pilih Bookingan(Optional)')
-                    ->relationship('booking', 'id')
+                    // Select::make('booking_id')->label('Pilih Bookingan(Optional)')
+                    //     ->relationship('booking', 'id')
 
-                    ->options(function () {
-                        return Booking::all()->pluck('kode_booking', 'id');
-                    })
-                    ->searchable(),
-                DatePicker::make('tanggal')->required(),
-                TextInput::make('keterangan'),
-                Select::make('unit_id')->label('Pilih Unit(Optional)')
-                    ->options(function () {
-                        return Unit::all()->pluck('nama', 'id');
-                    })
-                    ->searchable(),
-                TextInput::make('harga')->numeric()->required(),
-                Select::make('type')
-                    ->label('Pilih Type')
-                    ->options([
-                        'masuk' => 'Masuk',
-                        'keluar' => 'Keluar',
-                    ])
-                    ->required(),
-            ]);
+                    //     ->options(function () {
+                    //         return Booking::all()->pluck('kode_booking', 'id');
+                    //     })
+                    //     ->searchable(),
+                    DatePicker::make('tanggal')->required(),
+                    Select::make('type')
+                        ->label('Pilih Type')
+                        ->options([
+                                'token' => 'Token dan Air',
+                                'beban' => 'Beban Sewa',
+                                'sewa_unit' => 'Sewa Unit',
+                                'gaji' => 'Gaji',
+                                'lainnya' => 'Lainnya',
+                            ])
+                        ->required(),
+
+                    Select::make('unit_id')->label('Pilih Unit(Optional)')
+                        ->options(function () {
+                            return Unit::all()->pluck('nama', 'id');
+                        })
+                        ->searchable(),
+                    TextInput::make('harga')->numeric()->required(),
+                    TextInput::make('keterangan'),
+
+                    // Select::make('type')
+                    //     ->label('Pilih Type')
+                    //     ->options([
+                    //         'keluar' => 'Keluar',
+                    //     ])
+                    //     ->required(),
+                ]);
     }
 
 
@@ -74,38 +88,37 @@ class TransactionResource extends Resource
         return $table
             ->query(
                 static::getEloquentQuery()
-                    ->with(['unit.appartement', 'booking', 'user'])
+                    ->with(['unit.appartement', 'user'])
             )
             ->columns([
-                TextColumn::make('kode_invoice')->searchable(),
-                TextColumn::make('tanggal')->date(),
-                TextColumn::make('booking.kode_booking')->label('Kode Booking'),
+                    TextColumn::make('kode_invoice')->searchable(),
+                    TextColumn::make('tanggal')->date(),
 
-                TextColumn::make('id')
-                    ->label('Unit')
-                    ->formatStateUsing(function ($record) {
-                        return $record->booking?->unit?->nama ?? $record->unit?->nama ?? '-';
-                    }),
+                    TextColumn::make('id')
+                        ->label('Unit')
+                        ->formatStateUsing(function ($record) {
+                            return $record->booking?->unit?->nama ?? $record->unit?->nama ?? '-';
+                        }),
 
-                TextColumn::make('created_at')
-                    ->label('Appartement')
-                    ->formatStateUsing(function ($record) {
-                        return $record->booking?->unit?->appartement?->nama ?? $record->unit?->appartement?->nama ?? '-';
-                    }),
+                    TextColumn::make('created_at')
+                        ->label('Appartement')
+                        ->formatStateUsing(function ($record) {
+                            return $record->booking?->unit?->appartement?->nama ?? $record->unit?->appartement?->nama ?? '-';
+                        }),
 
-                // TextColumn::make('booking.unit.appartement.nama')->label('Appartement') ?? TextColumn::make('unit.appartement.nama')->label('Appartement'),
+                    // TextColumn::make('booking.unit.appartement.nama')->label('Appartement') ?? TextColumn::make('unit.appartement.nama')->label('Appartement'),
 
-                TextColumn::make('user.name'),
-                TextColumn::make('harga')->money('IDR'),
-                TextColumn::make('keterangan'),
-            ])
+                    TextColumn::make('user.name'),
+                    TextColumn::make('harga')->money('IDR'),
+                    TextColumn::make('keterangan'),
+                ])
             ->filters([])
             ->actions([
-                Tables\Actions\EditAction::make(),
-            ])
+                    Tables\Actions\EditAction::make(),
+                ])
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
-            ]);
+                    Tables\Actions\DeleteBulkAction::make(),
+                ]);
     }
 
 
@@ -127,12 +140,12 @@ class TransactionResource extends Resource
 
     // public static function canViewAny(): bool
     // {
-    //     return auth()->user()->can('admin-global') || auth()->user()->can('super-admin') || auth()->user()->can('super');
+    //     return auth()->user()->can('admin-global') || auth()->user()->can('super-admin');
     // }
 
     // public static function canCreate(): bool
     // {
-    //     return auth()->user()->can('super-admin');
+    //     return auth()->user()->can('super-admin') || auth()->user()->can('admin-global');
     // }
 
     // public static function canEdit(Model $record): bool

@@ -12,7 +12,6 @@ class CreateUser extends CreateRecord
 
     protected function mutatingFormDataBeforeCreate(array $data): array
     {
-        dd($data);
 
         return $data;
     }

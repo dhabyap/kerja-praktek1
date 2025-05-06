@@ -31,6 +31,18 @@ class UnitResource extends Resource
     protected static ?string $pluralModelLabel = 'Units';
     protected static ?string $navigationGroup = 'Master Data';
 
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        if (auth()->user()->can('admin-local') || auth()->user()->can('admin-global')) {
+            return $query->where('appartement_id', auth()->user()->appartement_id);
+        }
+
+        return $query;
+    }
+
+
     public static function form(Forms\Form $form): Forms\Form
     {
         $user = Filament::auth()->user();

@@ -1,6 +1,7 @@
 <?php
 namespace App\Filament\Widgets;
 
+use App\Models\Booking;
 use App\Models\Transaction;
 use Carbon\Carbon;
 use Filament\Widgets\ChartWidget;
@@ -22,8 +23,7 @@ class TransactionChart extends ChartWidget
         for ($date = $startOfMonth->copy(); $date <= $endOfMonth; $date->addDay()) {
             $labels[] = $date->format('d M');
 
-            $masuk = Transaction::whereDate('tanggal', $date)
-                ->where('type', 'masuk')
+            $masuk = Booking::whereDate('tanggal', $date)
                 ->sum('harga');
 
             $keluar = Transaction::whereDate('tanggal', $date)

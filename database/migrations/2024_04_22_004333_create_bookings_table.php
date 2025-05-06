@@ -16,11 +16,12 @@ return new class extends Migration
             $table->string('kode_booking')->unique();
             $table->string('nama');
             $table->date('tanggal');
-            $table->string('keterangan');
+            $table->enum('waktu', ['siang','malam']);
+            $table->enum('keterangan', ['halfday','fullday']);
+            // $table->string('keterangan');
             $table->foreignId('unit_id')->constrained();
             $table->foreignId('user_id')->constrained();
             $table->integer('harga');
-            $table->enum('waktu', ['siang','malam']);
             $table->timestamps();
         });
     }

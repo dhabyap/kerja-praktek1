@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -17,6 +18,12 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/admin/bookings/{booking}/download-invoice', [InvoiceController::class, 'download'])
+    ->name('booking.download.invoice');
+
+
+
 // Route::get('admin', [DashboardController::class, 'index'])->name('filament.admin.pages.dashboard');
 
 
@@ -30,4 +37,4 @@ Route::get('/', function () {
 //     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 // });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

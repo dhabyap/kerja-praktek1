@@ -20,35 +20,50 @@ class DashboardOverview extends BaseWidget
         $endOfMonth = $now->copy()->endOfMonth();
 
         // Booking hari ini
-        $todayBooking = Booking::whereDate('tanggal', $now->toDateString())->count();
+        $todayBooking = Booking::whereBetween('tanggal', [$startOfMonth, $endOfMonth])->count();
 
         // Total transaksi bulan ini
-        $monthlyTransactionCount = Transaction::whereBetween('tanggal', [$startOfMonth, $endOfMonth])->count();
+        // $monthlyTransactionCount = Transaction::whereBetween('tanggal', [$startOfMonth, $endOfMonth])->count();
 
         // Uang masuk bulan ini
-        $income = Transaction::where('type', 'masuk')
-            ->whereBetween('tanggal', [$startOfMonth, $endOfMonth])
+        $income = Booking::whereBetween('tanggal', [$startOfMonth, $endOfMonth])
             ->sum('harga');
 
         // Uang keluar bulan ini
-        $expense = Transaction::where('type', 'keluar')
-            ->whereBetween('tanggal', [$startOfMonth, $endOfMonth])
+        $expense = Transaction::
+            whereBetween('tanggal', [$startOfMonth, $endOfMonth])
             ->sum('harga');
 
-        return [
-            Card::make('Booking Hari Ini', $todayBooking)
-                ->description($now->format('d M Y'))
-                ->color('info'),
+        // Laba Bulan ini
+        $laba = $income - $expense;
 
-            Card::make('Transaksi Bulan Ini', $monthlyTransactionCount)
-                ->color('success'),
+        return [
+            Card::make('Booking Bulan Ini', $todayBooking)
+                ->description($now->format('d M Y'))
+                ->color('info')
+                ->extraAttributes([
+                    'class' => 'bg-blue-100 text-blue-800',
+                ]),
 
             Card::make('Uang Masuk Bulan Ini', 'Rp ' . number_format($income, 0, ',', '.'))
-                ->color('primary'),
+                ->color('success')
+                ->extraAttributes([
+                    'class' => 'bg-green-100 text-green-800',
+                ]),
 
             Card::make('Uang Keluar Bulan Ini', 'Rp ' . number_format($expense, 0, ',', '.'))
-                ->color('danger'),
+                ->color('warning')
+                ->extraAttributes([
+                    'class' => 'bg-yellow-100 text-yellow-800',
+                ]),
+
+            Card::make('Laba Bulan Ini', 'Rp ' . number_format($laba, 0, ',', '.'))
+                ->description($laba >= 0 ? 'Untung' : 'Rugi')
+                ->descriptionColor($laba >= 0 ? 'success' : 'danger')
+
         ];
+
+
     }
 
 }

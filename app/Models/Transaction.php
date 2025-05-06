@@ -10,10 +10,10 @@ class Transaction extends Model
     use HasFactory;
     protected $guarded = [];
 
-    public function booking()
-    {
-        return $this->belongsTo(Booking::class);
-    }
+    // public function booking()
+    // {
+    //     return $this->belongsTo(Booking::class);
+    // }
     public function unit()
     {
         return $this->belongsTo(Unit::class);
