@@ -27,7 +27,6 @@ class TransactionChart extends ChartWidget
                 ->sum('harga');
 
             $keluar = Transaction::whereDate('tanggal', $date)
-                ->where('type', 'keluar')
                 ->sum('harga');
 
             $dataMasuk[] = $masuk;
