@@ -88,13 +88,13 @@ class BookingResource extends Resource
                 TextColumn::make('nama'),
                 TextColumn::make('tanggal')->date(),
                 TextColumn::make('keterangan')->label('Ketengaran'),
-                TextColumn::make('user.name')->label('User')->label('Apartment')
+                TextColumn::make('user.name')->label('User')->label('Nama Admin')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('unit.nama')->label('Unit'),
                 TextColumn::make('harga_cash')->money('IDR'),
                 TextColumn::make('harga_transfer')->money('IDR'),
-                TextColumn::make('unit.appartement.nama')->label('Unit'),
+                TextColumn::make('unit.appartement.nama')->label('Nama Appartement'),
             ])
             ->filters([])
             ->actions([

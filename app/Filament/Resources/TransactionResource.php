@@ -114,7 +114,7 @@ class TransactionResource extends Resource
 
                 // TextColumn::make('booking.unit.appartement.nama')->label('Appartement') ?? TextColumn::make('unit.appartement.nama')->label('Appartement'),
 
-                TextColumn::make('user.name')->label('Apartment')
+                TextColumn::make('user.name')->label('Nama Admin')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('harga')->money('IDR'),
