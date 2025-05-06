@@ -11,6 +11,8 @@ class BookingChart extends ChartWidget
 
     protected function getData(): array
     {
+        $user = auth()->user();
+
         $now = Carbon::now();
         $startOfMonth = $now->copy()->startOfMonth();
         $endOfMonth = $now->copy()->endOfMonth();
@@ -18,9 +20,24 @@ class BookingChart extends ChartWidget
         $labels = [];
         $data = [];
 
+        // Ambil semua data booking untuk bulan ini terlebih dahulu
+        $bookingQuery = Booking::whereBetween('tanggal', [$startOfMonth, $endOfMonth]);
+
+        if ($user->can('admin-local') || $user->can('admin-global')) {
+            $bookingQuery->whereHas('unit', function ($q) use ($user) {
+                $q->where('appartement_id', $user->appartement_id);
+            });
+        }
+
+        $bookings = $bookingQuery->get()->groupBy(function ($item) {
+            return Carbon::parse($item->tanggal)->format('Y-m-d');
+        });
+
         for ($date = $startOfMonth->copy(); $date <= $endOfMonth; $date->addDay()) {
+            $key = $date->format('Y-m-d');
             $labels[] = $date->format('d M');
-            $data[] = Booking::whereDate('tanggal', $date)->count();
+
+            $data[] = isset($bookings[$key]) ? count($bookings[$key]) : 0;
         }
 
         return [
@@ -34,6 +51,7 @@ class BookingChart extends ChartWidget
             ],
         ];
     }
+
 
     protected function getType(): string
     {

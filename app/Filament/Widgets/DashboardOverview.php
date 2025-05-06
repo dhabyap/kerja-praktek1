@@ -15,26 +15,31 @@ class DashboardOverview extends BaseWidget
 {
     protected function getCards(): array
     {
+        $user = auth()->user();
+
         $now = Carbon::now();
         $startOfMonth = $now->copy()->startOfMonth();
         $endOfMonth = $now->copy()->endOfMonth();
 
-        // Booking hari ini
-        $todayBooking = Booking::whereBetween('tanggal', [$startOfMonth, $endOfMonth])->count();
+        $masuk = Booking::query();
+        $keluar = Transaction::query();
 
-        // Total transaksi bulan ini
-        // $monthlyTransactionCount = Transaction::whereBetween('tanggal', [$startOfMonth, $endOfMonth])->count();
+        if ($user->can('admin-local') || $user->can('admin-global')) {
+            $masuk->whereHas('unit', function ($q) use ($user) {
+                $q->where('appartement_id', $user->appartement_id);
+            });
 
-        // Uang masuk bulan ini
-        $income = Booking::whereBetween('tanggal', [$startOfMonth, $endOfMonth])
-            ->sum('harga');
+            $keluar->whereHas('unit', function ($q) use ($user) {
+                $q->where('appartement_id', $user->appartement_id);
+            });
+        }
 
-        // Uang keluar bulan ini
-        $expense = Transaction::
-            whereBetween('tanggal', [$startOfMonth, $endOfMonth])
-            ->sum('harga');
+        $tf = $masuk->whereBetween('tanggal', [$startOfMonth, $endOfMonth])->sum('harga_transfer');
+        $cash = $masuk->whereBetween('tanggal', [$startOfMonth, $endOfMonth])->sum('harga_cash');
+        $income = $tf + $cash;
+        $expense = $keluar->whereBetween('tanggal', [$startOfMonth, $endOfMonth])->sum('harga');
 
-        // Laba Bulan ini
+        $todayBooking = $masuk->count();
         $laba = $income - $expense;
 
         return [
@@ -59,11 +64,8 @@ class DashboardOverview extends BaseWidget
 
             Card::make('Laba Bulan Ini', 'Rp ' . number_format($laba, 0, ',', '.'))
                 ->description($laba >= 0 ? 'Untung' : 'Rugi')
-                ->descriptionColor($laba >= 0 ? 'success' : 'danger')
-
+                ->descriptionColor($laba >= 0 ? 'success' : 'danger'),
         ];
-
-
     }
 
 }

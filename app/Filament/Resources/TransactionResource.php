@@ -58,7 +58,6 @@ class TransactionResource extends Resource
                     ->label('Pilih Type')
                     ->options([
                         'token' => 'Token dan Air',
-                        'beban' => 'Beban Sewa',
                         'sewa_unit' => 'Sewa Unit',
                         'gaji' => 'Gaji',
                         'lainnya' => 'Lainnya',

@@ -59,7 +59,7 @@ class BookingResource extends Resource
                         }
                     })
                     ->required(),
-                TextInput::make('harga')->numeric()->required(),
+                TextInput::make('harga_transfer')->numeric(),
                 Select::make('waktu')
                     ->label('Pilih Waktu')
                     ->options([
@@ -67,18 +67,13 @@ class BookingResource extends Resource
                         'malam' => 'Malam',
                     ])
                     ->required(),
+                TextInput::make('harga_cash')->numeric(),
+
                 Select::make('keterangan')
                     ->label('keterangan')
                     ->options([
                         'halfday' => 'Halfday',
                         'fullday' => 'Fullday',
-                    ])
-                    ->required(),
-                Select::make('tipe_pembayaran')
-                    ->label('Pilih Tipe Pembayaran')
-                    ->options([
-                        'cash' => 'Cash',
-                        'transfer' => 'Transfer',
                     ])
                     ->required(),
             ]);
@@ -94,8 +89,8 @@ class BookingResource extends Resource
                 TextColumn::make('keterangan')->label('Ketengaran'),
                 TextColumn::make('user.name')->label('User'),
                 TextColumn::make('unit.nama')->label('Unit'),
-                TextColumn::make('harga')->money('IDR'),
-                TextColumn::make('tipe_pembayaran')->label('Tipe Pembayaran'),
+                TextColumn::make('harga_cash')->money('IDR'),
+                TextColumn::make('harga_transfer')->money('IDR'),
                 TextColumn::make('unit.appartement.nama')->label('Unit'),
             ])
             ->filters([])

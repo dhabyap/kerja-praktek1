@@ -10,10 +10,10 @@ class Booking extends Model
     use HasFactory;
     protected $guarded = [];
 
-    // public function transactions()
-    // {
-    //     return $this->hasMany(Transaction::class);
-    // }
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class);
+    }
     public function unit()
     {
         return $this->belongsTo(Unit::class);

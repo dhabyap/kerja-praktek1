@@ -12,6 +12,8 @@ class TransactionChart extends ChartWidget
 
     protected function getData(): array
     {
+        $user = auth()->user();
+
         $now = Carbon::now();
         $startOfMonth = $now->copy()->startOfMonth();
         $endOfMonth = $now->copy()->endOfMonth();
@@ -23,14 +25,24 @@ class TransactionChart extends ChartWidget
         for ($date = $startOfMonth->copy(); $date <= $endOfMonth; $date->addDay()) {
             $labels[] = $date->format('d M');
 
-            $masuk = Booking::whereDate('tanggal', $date)
-                ->sum('harga');
+            // Mulai dengan query builder
+            $masukQuery = Booking::whereDate('tanggal', $date);
+            $keluarQuery = Transaction::whereDate('tanggal', $date);
 
-            $keluar = Transaction::whereDate('tanggal', $date)
-                ->sum('harga');
+            // Filter jika admin lokal/global
+            if ($user->can('admin-local') || $user->can('admin-global')) {
+                $masukQuery->whereHas('unit', function ($q) use ($user) {
+                    $q->where('appartement_id', $user->appartement_id);
+                });
 
-            $dataMasuk[] = $masuk;
-            $dataKeluar[] = $keluar;
+                $keluarQuery->whereHas('unit', function ($q) use ($user) {
+                    $q->where('appartement_id', $user->appartement_id);
+                });
+            }
+
+            // Eksekusi query
+            $dataMasuk[] = $masukQuery->sum('harga_cash') + $masukQuery->sum('harga_transfer');
+            $dataKeluar[] = $keluarQuery->sum('harga');
         }
 
         return [
@@ -49,6 +61,7 @@ class TransactionChart extends ChartWidget
             ],
         ];
     }
+
 
 
     protected function getType(): string
