@@ -44,7 +44,7 @@ class DashboardOverview extends BaseWidget
 
         return [
             Card::make('Booking Bulan Ini', $todayBooking)
-                ->description($now->format('d M Y'))
+                ->description($now->format('M Y'))
                 ->color('info')
                 ->extraAttributes([
                     'class' => 'bg-blue-100 text-blue-800',
