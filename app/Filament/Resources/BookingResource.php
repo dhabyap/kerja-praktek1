@@ -18,7 +18,8 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\DatePicker;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\BookingResource\Pages;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Database\Eloquent\Model;
+
 use App\Filament\Resources\BookingResource\RelationManagers;
 use App\Filament\Resources\TransactionRelationManagerResource\RelationManagers\TransactionRelationManager;
 
@@ -87,7 +88,9 @@ class BookingResource extends Resource
                 TextColumn::make('nama'),
                 TextColumn::make('tanggal')->date(),
                 TextColumn::make('keterangan')->label('Ketengaran'),
-                TextColumn::make('user.name')->label('User'),
+                TextColumn::make('user.name')->label('User')->label('Apartment')
+                    ->searchable()
+                    ->sortable(),
                 TextColumn::make('unit.nama')->label('Unit'),
                 TextColumn::make('harga_cash')->money('IDR'),
                 TextColumn::make('harga_transfer')->money('IDR'),
@@ -105,7 +108,6 @@ class BookingResource extends Resource
 
             ])
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
             ]);
     }
 
@@ -135,4 +137,10 @@ class BookingResource extends Resource
 
         return $data;
     }
+
+    public static function canDelete(Model $record): bool
+    {
+        return auth()->user()->can('super-admin');
+    }
+
 }

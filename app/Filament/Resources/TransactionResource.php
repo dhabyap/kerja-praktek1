@@ -114,7 +114,9 @@ class TransactionResource extends Resource
 
                 // TextColumn::make('booking.unit.appartement.nama')->label('Appartement') ?? TextColumn::make('unit.appartement.nama')->label('Appartement'),
 
-                TextColumn::make('user.name'),
+                TextColumn::make('user.name')->label('Apartment')
+                    ->searchable()
+                    ->sortable(),
                 TextColumn::make('harga')->money('IDR'),
                 TextColumn::make('keterangan'),
                 TextColumn::make('tipe_pembayaran')->label('Tipe Pembayaran'),
@@ -125,7 +127,6 @@ class TransactionResource extends Resource
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
             ]);
     }
 
@@ -161,10 +162,10 @@ class TransactionResource extends Resource
     //     return auth()->user()->can('super-admin');
     // }
 
-    // public static function canDelete(Model $record): bool
-    // {
-    //     return auth()->user()->can('super-admin');
-    // }
+    public static function canDelete(Model $record): bool
+    {
+        return auth()->user()->can('super-admin');
+    }
 
 
 }
