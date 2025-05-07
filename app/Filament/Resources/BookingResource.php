@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Resources\BookingResource\Widgets\BookingStats;
+use App\Models\User;
 use Filament\Forms;
 use App\Models\Unit;
 use Filament\Tables;
@@ -19,9 +21,7 @@ use Filament\Forms\Components\DatePicker;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\BookingResource\Pages;
 use Illuminate\Database\Eloquent\Model;
-
-use App\Filament\Resources\BookingResource\RelationManagers;
-use App\Filament\Resources\TransactionRelationManagerResource\RelationManagers\TransactionRelationManager;
+use Filament\Tables\Filters\Filter;
 
 class BookingResource extends Resource
 {
@@ -80,23 +80,69 @@ class BookingResource extends Resource
             ]);
     }
 
+
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                // TextColumn::make('kode_booking'),
-                TextColumn::make('nama'),
-                TextColumn::make('tanggal')->date(),
-                TextColumn::make('keterangan')->label('Ketengaran'),
-                TextColumn::make('user.name')->label('User')->label('Nama Admin')
-                    ->searchable()
-                    ->sortable(),
-                TextColumn::make('unit.nama')->label('Unit'),
-                TextColumn::make('harga_cash')->money('IDR'),
-                TextColumn::make('harga_transfer')->money('IDR'),
-                TextColumn::make('unit.appartement.nama')->label('Nama Appartement'),
+                TextColumn::make('nama')->sortable(),
+                TextColumn::make('tanggal')->date()->sortable(),
+                TextColumn::make('keterangan')->label('Ketengaran')->sortable(),
+                TextColumn::make('user.name')->label('Nama Admin')->searchable()->sortable(),
+                TextColumn::make('unit.nama')->label('Unit')->sortable(),
+                TextColumn::make('harga_cash')->money('IDR')->sortable(),
+                TextColumn::make('harga_transfer')->money('IDR')->sortable(),
+                TextColumn::make('unit.appartement.nama')->label('Nama Appartement')->sortable(),
             ])
-            ->filters([])
+            ->filters([
+                // Filter Nama
+                Filter::make('nama')
+                    ->form([
+                        TextInput::make('nama')->label('Nama'),
+                    ])
+                    ->query(function ($query, array $data) {
+                        return $query->when($data['nama'], fn($q, $nama) => $q->where('nama', 'like', "%{$nama}%"));
+                    }),
+
+                // Filter Tanggal
+                Filter::make('tanggal_range')
+                    ->form([
+                        DatePicker::make('tanggal_from')->label('Dari Tanggal'),
+                        DatePicker::make('tanggal_until')->label('Sampai Tanggal'),
+                    ])
+                    ->query(function ($query, array $data) {
+                        return $query
+                            ->when($data['tanggal_from'], fn($q, $from) => $q->whereDate('tanggal', '>=', $from))
+                            ->when($data['tanggal_until'], fn($q, $until) => $q->whereDate('tanggal', '<=', $until));
+                    }),
+
+
+                // Filter Unit
+                Filter::make('unit_id')
+                    ->form([
+                        Select::make('unit_id')
+                            ->label('Unit')
+                            ->options(Unit::pluck('nama', 'id'))
+                            ->searchable()
+                            ->preload(),
+                    ])
+                    ->query(function ($query, array $data) {
+                        return $query->when($data['unit_id'], fn($q, $unitId) => $q->where('unit_id', $unitId));
+                    }),
+
+                // Filter User
+                Filter::make('user_id')
+                    ->form([
+                        Select::make('user_id')
+                            ->label('User')
+                            ->options(User::pluck('name', 'id'))
+                            ->searchable()
+                            ->preload(),
+                    ])
+                    ->query(function ($query, array $data) {
+                        return $query->when($data['user_id'], fn($q, $userId) => $q->where('user_id', $userId));
+                    }),
+            ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
@@ -105,11 +151,10 @@ class BookingResource extends Resource
                     ->icon('heroicon-o-arrow-down-tray')
                     ->url(fn($record) => route('booking.download.invoice', ['booking' => $record->id]))
                     ->openUrlInNewTab(),
-
             ])
-            ->bulkActions([
-            ]);
+            ->bulkActions([]);
     }
+
 
     public static function getRelations(): array
     {
@@ -118,6 +163,12 @@ class BookingResource extends Resource
         ];
     }
 
+    public static function getWidgets(): array
+    {
+        return [
+            BookingStats::class,
+        ];
+    }
 
     public static function getPages(): array
     {

@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\TransactionResource\Pages\CreateTransaction;
 use App\Models\Unit;
+use App\Models\User;
 use Filament\Tables;
 use App\Models\Booking;
 use Filament\Forms\Form;
@@ -19,6 +20,7 @@ use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\TransactionResource\Pages\EditTransaction;
 use App\Filament\Resources\TransactionResource\Pages\ListTransactions;
 use Illuminate\Support\Facades\Log;
+use Filament\Tables\Filters\Filter;
 
 
 class TransactionResource extends Resource
@@ -27,7 +29,6 @@ class TransactionResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';
     protected static ?string $navigationLabel = 'Pengeluaran';
 
-    // Jika kamu juga ingin mengubah judul halaman daftar (bukan hanya di sidebar):
     protected static ?string $pluralModelLabel = 'Pengeluaran';
     public static function getEloquentQuery(): Builder
     {
@@ -76,7 +77,6 @@ class TransactionResource extends Resource
             ]);
     }
 
-
     public static function table(Table $table): Table
     {
         return $table
@@ -85,39 +85,79 @@ class TransactionResource extends Resource
                     ->with(['unit.appartement', 'user'])
             )
             ->columns([
-                TextColumn::make('kode_invoice')->searchable(),
-                TextColumn::make('tanggal')->date(),
-
+                TextColumn::make('kode_invoice')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('tanggal')
+                    ->date()
+                    ->sortable(),
                 TextColumn::make('id')
                     ->label('Unit')
+                    ->sortable()
                     ->formatStateUsing(function ($record) {
                         return $record->booking?->unit?->nama ?? $record->unit?->nama ?? '-';
                     }),
-
                 TextColumn::make('created_at')
                     ->label('Appartement')
+                    ->sortable()
                     ->formatStateUsing(function ($record) {
                         return $record->booking?->unit?->appartement?->nama ?? $record->unit?->appartement?->nama ?? '-';
                     }),
-
-                // TextColumn::make('booking.unit.appartement.nama')->label('Appartement') ?? TextColumn::make('unit.appartement.nama')->label('Appartement'),
-
-                TextColumn::make('user.name')->label('Nama Admin')
+                TextColumn::make('user.name')
+                    ->label('Nama Admin')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('harga')->money('IDR'),
-                TextColumn::make('keterangan'),
-                TextColumn::make('tipe_pembayaran')->label('Tipe Pembayaran'),
-
+                TextColumn::make('harga')
+                    ->money('IDR')
+                    ->sortable(),
+                TextColumn::make('keterangan')
+                    ->sortable(),
+                TextColumn::make('tipe_pembayaran')
+                    ->label('Tipe Pembayaran')
+                    ->sortable(),
             ])
-            ->filters([])
+            ->filters([
+                Filter::make('tanggal_range')
+                    ->form([
+                        DatePicker::make('tanggal_from')->label('Dari Tanggal'),
+                        DatePicker::make('tanggal_until')->label('Sampai Tanggal'),
+                    ])
+                    ->query(function ($query, array $data) {
+                        return $query
+                            ->when($data['tanggal_from'], fn($q, $from) => $q->whereDate('tanggal', '>=', $from))
+                            ->when($data['tanggal_until'], fn($q, $until) => $q->whereDate('tanggal', '<=', $until));
+                    }),
+                // Filter Unit
+                Filter::make('unit_id')
+                    ->form([
+                        Select::make('unit_id')
+                            ->label('Unit')
+                            ->options(Unit::pluck('nama', 'id'))
+                            ->searchable()
+                            ->preload(),
+                    ])
+                    ->query(function ($query, array $data) {
+                        return $query->when($data['unit_id'], fn($q, $unitId) => $q->where('unit_id', $unitId));
+                    }),
+
+                // Filter User
+                Filter::make('user_id')
+                    ->form([
+                        Select::make('user_id')
+                            ->label('User')
+                            ->options(User::pluck('name', 'id'))
+                            ->searchable()
+                            ->preload(),
+                    ])
+                    ->query(function ($query, array $data) {
+                        return $query->when($data['user_id'], fn($q, $userId) => $q->where('user_id', $userId));
+                    }),
+            ])
             ->actions([
                 Tables\Actions\EditAction::make(),
             ])
-            ->bulkActions([
-            ]);
+            ->bulkActions([]);
     }
-
 
     public static function getRelations(): array
     {

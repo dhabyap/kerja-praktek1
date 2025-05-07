@@ -2,57 +2,56 @@
 
 namespace App\Filament\Resources\BookingResource\Widgets;
 
-use Filament\Widgets\StatsOverviewWidget as BaseWidget;
+use Filament\Forms\Components\DatePicker;
+use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Card;
+use Illuminate\Support\Carbon;
 use App\Models\Booking;
-use Carbon\Carbon;
 
-class BookingStats extends BaseWidget
+class BookingStats extends StatsOverviewWidget
 {
+    public ?string $tanggal = null;
+
     protected function getCards(): array
     {
+        $tanggal = $this->tanggal ?? now()->format('Y-m-d');
+        $date = Carbon::parse($tanggal);
         $user = auth()->user();
-        $today = Carbon::today();
 
-        // Mulai dengan query builder
-        $totalTodayQuery = Booking::whereDate('tanggal', $today);
-        $masukQuery = Booking::whereDate('tanggal', $today);
+        $query = Booking::whereDate('tanggal', $date);
 
-        // Filter jika admin lokal/global
         if ($user->can('admin-local') || $user->can('admin-global')) {
-            $totalTodayQuery->whereHas('unit', function ($q) use ($user) {
-                $q->where('appartement_id', $user->appartement_id);
-            });
-
-            $masukQuery->whereHas('unit', function ($q) use ($user) {
-                $q->where('appartement_id', $user->appartement_id);
-            });
+            $query->whereHas('unit', fn($q) => $q->where('appartement_id', $user->appartement_id));
         }
 
-        // Eksekusi query
-        $totalToday = $totalTodayQuery->count();
-        $tf = $masukQuery->sum('harga_transfer');
-        $masuk = $masukQuery->sum('harga_cash');
-
-        $combine = $tf + $masuk;
+        $total = $query->count();
+        $cash = (clone $query)->sum('harga_cash');
+        $transfer = (clone $query)->sum('harga_transfer');
+        $totalMasuk = $cash + $transfer;
 
         return [
-            Card::make('Total Booking Hari Ini', $totalToday)
-                ->description($today->format('d M Y'))
+            Card::make('Total Booking Hari Ini', $total)
+                ->description($date->format('d M Y'))
                 ->color('info'),
-
-            Card::make('Total Pemasukan Hari Ini', 'Rp ' . number_format($combine, 0, ',', '.'))
-                ->description($today->format('d M Y'))
-                ->color('success'),
-
-            Card::make('Total Cash Hari Ini', 'Rp ' . number_format($masuk, 0, ',', '.'))
-                ->description($today->format('d M Y'))
-                ->color('primary'),
-
-            Card::make('Total Transfer Hari Ini', 'Rp ' . number_format($tf, 0, ',', '.'))
-                ->description($today->format('d M Y'))
-                ->color('danger'),
+            Card::make('Total Pemasukan', 'Rp ' . number_format($totalMasuk, 0, ',', '.'))->color('success'),
+            Card::make('Total Cash', 'Rp ' . number_format($cash, 0, ',', '.'))->color('primary'),
+            Card::make('Total Transfer', 'Rp ' . number_format($transfer, 0, ',', '.'))->color('danger'),
         ];
     }
 
+    protected function getFormSchema(): array
+    {
+        return [
+            DatePicker::make('tanggal')
+                ->label('Pilih Tanggal')
+                ->default(now())
+                ->reactive()
+                ->afterStateUpdated(fn() => $this->dispatch('refresh')),
+        ];
+    }
+
+    protected function hasForm(): bool
+    {
+        return true;
+    }
 }
