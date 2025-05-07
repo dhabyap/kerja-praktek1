@@ -26,7 +26,6 @@ use Filament\Tables\Filters\Filter;
 class BookingResource extends Resource
 {
     protected static ?string $model = Booking::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function getEloquentQuery(): Builder
@@ -38,7 +37,6 @@ class BookingResource extends Resource
                 $q->where('appartement_id', auth()->user()->appartement_id);
             });
         }
-
         return $query;
     }
 
@@ -80,12 +78,11 @@ class BookingResource extends Resource
             ]);
     }
 
-
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                TextColumn::make('nama')->sortable(),
+                TextColumn::make('nama')->searchable()->sortable(),
                 TextColumn::make('tanggal')->date()->sortable(),
                 TextColumn::make('keterangan')->label('Ketengaran')->sortable(),
                 TextColumn::make('user.name')->label('Nama Admin')->searchable()->sortable(),
@@ -95,7 +92,6 @@ class BookingResource extends Resource
                 TextColumn::make('unit.appartement.nama')->label('Nama Appartement')->sortable(),
             ])
             ->filters([
-                // Filter Nama
                 Filter::make('nama')
                     ->form([
                         TextInput::make('nama')->label('Nama'),
@@ -104,7 +100,6 @@ class BookingResource extends Resource
                         return $query->when($data['nama'], fn($q, $nama) => $q->where('nama', 'like', "%{$nama}%"));
                     }),
 
-                // Filter Tanggal
                 Filter::make('tanggal_range')
                     ->form([
                         DatePicker::make('tanggal_from')->label('Dari Tanggal'),
@@ -115,7 +110,6 @@ class BookingResource extends Resource
                             ->when($data['tanggal_from'], fn($q, $from) => $q->whereDate('tanggal', '>=', $from))
                             ->when($data['tanggal_until'], fn($q, $until) => $q->whereDate('tanggal', '<=', $until));
                     }),
-
 
                 // Filter Unit
                 Filter::make('unit_id')
@@ -143,18 +137,23 @@ class BookingResource extends Resource
                         return $query->when($data['user_id'], fn($q, $userId) => $q->where('user_id', $userId));
                     }),
             ])
+            ->headerActions([
+                Tables\Actions\Action::make('downloadExcel')
+                    ->label('Download Excel')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->url(fn() => route('booking.export', request()->all()))
+            ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('downloadInvoice')
-                    ->label('Download Invoice')
-                    ->icon('heroicon-o-arrow-down-tray')
-                    ->url(fn($record) => route('booking.download.invoice', ['booking' => $record->id]))
-                    ->openUrlInNewTab(),
+                // Tables\Actions\Action::make('downloadInvoice')
+                //     ->label('Download Invoice')
+                //     ->icon('heroicon-o-arrow-down-tray')
+                //     ->url(fn($record) => route('booking.download.invoice', ['booking' => $record->id]))
+                //     ->openUrlInNewTab(),
             ])
             ->bulkActions([]);
     }
-
 
     public static function getRelations(): array
     {

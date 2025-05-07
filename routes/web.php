@@ -2,7 +2,10 @@
 
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TransactionExportController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\BookingExportController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -21,6 +24,9 @@ Route::get('/', function () {
 
 Route::get('/admin/bookings/{booking}/download-invoice', [InvoiceController::class, 'download'])
     ->name('booking.download.invoice');
+
+Route::get('/booking/export', [BookingExportController::class, 'export'])->name('booking.export');
+Route::get('/transaksi/export', [TransactionExportController::class, 'export'])->name('transaksi.export');
 
 
 

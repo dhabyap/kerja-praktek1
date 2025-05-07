@@ -110,11 +110,10 @@ class TransactionResource extends Resource
                 TextColumn::make('harga')
                     ->money('IDR')
                     ->sortable(),
-                TextColumn::make('keterangan')
-                    ->sortable(),
                 TextColumn::make('tipe_pembayaran')
                     ->label('Tipe Pembayaran')
                     ->sortable(),
+                TextColumn::make('keterangan'),
             ])
             ->filters([
                 Filter::make('tanggal_range')
@@ -152,6 +151,12 @@ class TransactionResource extends Resource
                     ->query(function ($query, array $data) {
                         return $query->when($data['user_id'], fn($q, $userId) => $q->where('user_id', $userId));
                     }),
+            ])
+            ->headerActions([
+                Tables\Actions\Action::make('downloadExcel')
+                    ->label('Download Excel')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->url(fn() => route('transaksi.export', request()->all())) // Menyertakan filter yang ada
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
