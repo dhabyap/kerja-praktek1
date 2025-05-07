@@ -138,12 +138,12 @@ class AppartementReport extends Page implements Tables\Contracts\HasTable
 
     public static function canViewAny(): bool
     {
-        return auth()->user()->can('super-admin');
+        return auth()->user()->can('super-admin') || auth()->user()->can('admin-global');
     }
 
     public static function shouldRegisterNavigation(): bool
     {
-        return auth()->user()->can('super-admin');
+        return auth()->user()->can('super-admin') || auth()->user()->can('admin-global');
     }
 
 }
