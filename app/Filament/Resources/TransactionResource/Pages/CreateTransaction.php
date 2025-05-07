@@ -24,8 +24,14 @@ class CreateTransaction extends CreateRecord
         $random = str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT);
         $kodeInvoice = "INV-{$tanggal}-{$random}.{$record->id}";
 
-            $record->update([
+        $record->update([
             'kode_invoice' => $kodeInvoice,
         ]);
     }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
+
 }

@@ -46,13 +46,6 @@ class TransactionResource extends Resource
     {
         return $form
             ->schema([
-                // Select::make('booking_id')->label('Pilih Bookingan(Optional)')
-                //     ->relationship('booking', 'id')
-
-                //     ->options(function () {
-                //         return Booking::all()->pluck('kode_booking', 'id');
-                //     })
-                //     ->searchable(),
                 DatePicker::make('tanggal')->required(),
                 Select::make('type')
                     ->label('Pilih Type')
@@ -79,12 +72,7 @@ class TransactionResource extends Resource
                 TextInput::make('harga')->numeric()->required(),
                 TextInput::make('keterangan'),
 
-                // Select::make('type')
-                //     ->label('Pilih Type')
-                //     ->options([
-                //         'keluar' => 'Keluar',
-                //     ])
-                //     ->required(),
+
             ]);
     }
 
@@ -146,6 +134,14 @@ class TransactionResource extends Resource
             'edit' => EditTransaction::route('/{record}/edit'),
         ];
     }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index'); // redirect ke halaman list transaction
+        // Atau redirect ke halaman custom:
+        // return route('filament.admin.pages.dashboard');
+    }
+
 
     // public static function canViewAny(): bool
     // {

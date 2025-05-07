@@ -12,7 +12,11 @@ class CreateUser extends CreateRecord
 
     protected function mutatingFormDataBeforeCreate(array $data): array
     {
-
         return $data;
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
     }
 }
