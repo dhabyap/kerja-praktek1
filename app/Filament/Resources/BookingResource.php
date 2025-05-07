@@ -28,6 +28,7 @@ class BookingResource extends Resource
     protected static ?string $model = Booking::class;
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    protected static ?string $navigationGroup = 'Transaksi';
     public static function getEloquentQuery(): Builder
     {
         $query = parent::getEloquentQuery();
@@ -73,6 +74,7 @@ class BookingResource extends Resource
                     ->options([
                         'halfday' => 'Halfday',
                         'fullday' => 'Fullday',
+                        'transit' => 'Transit',
                     ])
                     ->required(),
             ]);
