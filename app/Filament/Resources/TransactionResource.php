@@ -28,8 +28,9 @@ class TransactionResource extends Resource
     protected static ?string $model = Transaction::class;
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';
     protected static ?string $navigationLabel = 'Pengeluaran';
-
     protected static ?string $pluralModelLabel = 'Pengeluaran';
+    protected static ?string $navigationGroup = 'Transaksi';
+
     public static function getEloquentQuery(): Builder
     {
         $query = parent::getEloquentQuery();
