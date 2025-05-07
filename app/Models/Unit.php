@@ -18,6 +18,15 @@ class Unit extends Model
         return $this->belongsTo(Appartement::class);
     }
 
-    
+    public function bookings()
+    {
+        return $this->hasMany(Booking::class);
+    }
+
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class);
+    }
+
 
 }
