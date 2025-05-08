@@ -85,7 +85,7 @@ class TransactionResource extends Resource
                 TextInput::make('harga')
                     ->numeric()
                     ->required(),
-                TextInput::make('keterangan'),
+                TextInput::make('keterangan')->label('Keterangan (Optional)'),
             ]);
     }
 
@@ -125,6 +125,7 @@ class TransactionResource extends Resource
                 TextColumn::make('tipe_pembayaran')
                     ->label('Tipe Pembayaran')
                     ->sortable(),
+                TextColumn::make('type'),
                 TextColumn::make('keterangan'),
             ])
             ->filters([
