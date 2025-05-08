@@ -19,7 +19,7 @@ use App\Http\Controllers\BookingExportController;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect('/admin/login');
 });
 
 Route::get('/admin/bookings/{booking}/download-invoice', [InvoiceController::class, 'download'])

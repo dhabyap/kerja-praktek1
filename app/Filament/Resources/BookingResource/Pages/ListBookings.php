@@ -3,7 +3,8 @@
 namespace App\Filament\Resources\BookingResource\Pages;
 
 use App\Filament\Resources\BookingResource;
-use App\Filament\Resources\BookingResource\Widgets\BookingStats;
+use App\Filament\Widgets\BookingStats;
+use App\Filament\Widgets\BookingStatsHeader;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 
@@ -18,13 +19,11 @@ class ListBookings extends ListRecords
         ];
     }
 
-
     protected function getHeaderWidgets(): array
     {
         return [
+            BookingStatsHeader::class,
             BookingStats::class,
         ];
     }
-
-
 }

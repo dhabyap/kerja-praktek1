@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('nama');
             $table->date('tanggal');
             $table->enum('waktu', ['siang','malam']);
-            $table->enum('keterangan', ['halfday','fullday']);
+            $table->enum('keterangan', ['halfday','fullday', 'transit']);
             // $table->string('keterangan');
             $table->foreignId('unit_id')->constrained();
             $table->foreignId('user_id')->constrained();

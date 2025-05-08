@@ -166,9 +166,8 @@ class BookingResource extends Resource
 
     public static function getWidgets(): array
     {
-        return [
-            BookingStats::class,
-        ];
+        return [];
+
     }
 
     public static function getPages(): array
