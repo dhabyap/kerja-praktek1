@@ -21,6 +21,7 @@ use App\Filament\Resources\TransactionResource\Pages\EditTransaction;
 use App\Filament\Resources\TransactionResource\Pages\ListTransactions;
 use Illuminate\Support\Facades\Log;
 use Filament\Tables\Filters\Filter;
+use Filament\Facades\Filament;
 
 
 class TransactionResource extends Resource
@@ -46,6 +47,9 @@ class TransactionResource extends Resource
 
     public static function form(Form $form): Form
     {
+        // Cara yang benar untuk mendapatkan user di static method
+        $user = Filament::auth()->user();
+
         return $form
             ->schema([
                 DatePicker::make('tanggal')->required(),
@@ -66,15 +70,22 @@ class TransactionResource extends Resource
                     ])
                     ->required(),
 
-                Select::make('unit_id')->label('Pilih Unit(Optional)')
-                    ->options(function () {
-                        return Unit::all()->pluck('nama', 'id');
+                Select::make('unit_id')
+                    ->label('Pilih Unit (Optional)')
+                    ->options(function () use ($user) { // Tambahkan use ($user)
+                        if (!$user) {
+                            return Unit::all()->pluck('nama', 'id');
+                        }
+
+                        return $user->level_id === 1
+                            ? Unit::all()->pluck('nama', 'id')
+                            : Unit::where('appartement_id', $user->appartement_id)->pluck('nama', 'id');
                     })
                     ->searchable(),
-                TextInput::make('harga')->numeric()->required(),
+                TextInput::make('harga')
+                    ->numeric()
+                    ->required(),
                 TextInput::make('keterangan'),
-
-
             ]);
     }
 
