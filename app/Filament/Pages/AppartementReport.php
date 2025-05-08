@@ -3,15 +3,11 @@
 namespace App\Filament\Pages;
 
 use App\Models\Appartement;
-use Filament\Forms;
-use Filament\Forms\Components\Select;
 use Filament\Pages\Page;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Support\Carbon;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
-
 
 class AppartementReport extends Page implements Tables\Contracts\HasTable
 {
@@ -21,65 +17,37 @@ class AppartementReport extends Page implements Tables\Contracts\HasTable
     protected static string $view = 'filament.pages.appartement-report';
     protected static ?string $title = 'Laporan Appartement';
 
-    public ?int $filterMonth;
-    public ?int $filterYear;
+    protected static ?string $navigationLabel = 'Laporan Appartement';
+    protected static ?string $pluralModelLabel = 'Laporan Appartement';
+    protected static ?string $navigationGroup = 'Laporan';
 
-    public static function getEloquentQuery(): Builder
-    {
-        $query = parent::getEloquentQuery();
+    public ?string $filterStartDate = null;
+    public ?string $filterEndDate = null;
+    public ?int $filterAppartement = null;
 
-        if (auth()->user()->can('admin-local') || auth()->user()->can('admin-global')) {
-            return $query->where('appartement_id', auth()->user()->appartement_id);
-        }
-
-        return $query;
-    }
     public function mount()
     {
-        $this->filterMonth = request()->query('filterMonth', now()->month);
-        $this->filterYear = request()->query('filterYear', now()->year);
+        $this->filterStartDate = request()->query('filterStartDate', now()->startOfMonth()->format('Y-m-d'));
+        $this->filterEndDate = request()->query('filterEndDate', now()->endOfMonth()->format('Y-m-d'));
+        $this->filterAppartement = request()->query('filterAppartement');
     }
 
-
-    protected function getFormSchema(): array
+    protected function getTableQuery(): Builder
     {
-        return [
-            Select::make('filterMonth')
-                ->label('Bulan')
-                ->options(array_combine(range(1, 12), array_map(function ($month) {
-                    return Carbon::create()->month($month)->translatedFormat('F');
-                }, range(1, 12))))
-                ->default(now()->month)
-                ->reactive(), // Pastikan ini reactive agar formnya bisa diperbarui
+        $startDate = $this->filterStartDate ? Carbon::parse($this->filterStartDate)->startOfDay() : now()->startOfMonth();
+        $endDate = $this->filterEndDate ? Carbon::parse($this->filterEndDate)->endOfDay() : now()->endOfMonth();
 
-            Select::make('filterYear')
-                ->label('Tahun')
-                ->options(range(2023, now()->year + 1))
-                ->default(now()->year)
-                ->reactive(), // Pastikan ini reactive agar formnya bisa diperbarui
-        ];
-    }
+        $query = Appartement::query();
 
+        if ($this->filterAppartement) {
+            $query->where('id', $this->filterAppartement);
+        }
 
-    protected function getTableQuery()
-    {
-        $start = Carbon::create($this->filterYear, $this->filterMonth)->startOfMonth();
-        $end = $start->copy()->endOfMonth();
-
-        return Appartement::with([
-            'units.bookings' => fn($query) => $query->whereBetween('tanggal', [$start, $end]),
-            'units.transactions' => fn($query) => $query->whereBetween('tanggal', [$start, $end]),
+        return $query->with([
+            'units.bookings' => fn($query) => $query->whereBetween('tanggal', [$startDate, $endDate]),
+            'units.transactions' => fn($query) => $query->whereBetween('tanggal', [$startDate, $endDate]),
         ]);
     }
-
-    public function filterData()
-    {
-        $this->filterMonth = $this->form->getState()['filterMonth'];
-        $this->filterYear = $this->form->getState()['filterYear'];
-
-        $this->resetTable();
-    }
-
 
     protected function getTableColumns(): array
     {
@@ -145,5 +113,4 @@ class AppartementReport extends Page implements Tables\Contracts\HasTable
     {
         return auth()->user()->can('super-admin') || auth()->user()->can('admin-global');
     }
-
 }

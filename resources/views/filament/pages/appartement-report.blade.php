@@ -4,28 +4,34 @@
 
         <form method="GET" action="">
             <div class="flex items-end gap-4">
+                <!-- Filter Tanggal Mulai -->
                 <div class="w-48">
-                    <label for="filterMonth"
-                        class="block text-sm font-medium text-gray-700 dark:text-gray-200">Bulan</label>
-                    <select id="filterMonth" name="filterMonth"
+                    <label for="filterStartDate"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-200">Tanggal Mulai</label>
+                    <input type="date" id="filterStartDate" name="filterStartDate"
+                        value="{{ request('filterStartDate') }}"
                         class="block w-full mt-1 rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white">
-                        @foreach(range(1, 12) as $month)
-                        <option value="{{ $month }}" {{ request('filterMonth', now()->month) == $month ? 'selected' : ''
-                            }}>
-                            {{ \Carbon\Carbon::create()->month($month)->translatedFormat('F') }}
-                        </option>
-                        @endforeach
-                    </select>
                 </div>
 
+                <!-- Filter Tanggal Akhir -->
                 <div class="w-48">
-                    <label for="filterYear"
-                        class="block text-sm font-medium text-gray-700 dark:text-gray-200">Tahun</label>
-                    <select id="filterYear" name="filterYear"
+                    <label for="filterEndDate"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-200">Tanggal Akhir</label>
+                    <input type="date" id="filterEndDate" name="filterEndDate" value="{{ request('filterEndDate') }}"
                         class="block w-full mt-1 rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white">
-                        @foreach(range(2023, now()->year + 1) as $year)
-                        <option value="{{ $year }}" {{ request('filterYear', now()->year) == $year ? 'selected' : '' }}>
-                            {{ $year }}
+                </div>
+
+                <!-- Filter Appartement -->
+                <div class="w-64">
+                    <label for="filterAppartement"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-200">Appartement</label>
+                    <select id="filterAppartement" name="filterAppartement"
+                        class="block w-full mt-1 rounded-md border-gray-300 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+                        <option value="">Semua Appartement</option>
+                        @foreach(\App\Models\Appartement::all() as $appartement)
+                        <option value="{{ $appartement->id }}" {{ request('filterAppartement')==$appartement->id ?
+                            'selected' : '' }}>
+                            {{ $appartement->nama }}
                         </option>
                         @endforeach
                     </select>
@@ -36,7 +42,6 @@
                 </x-filament::button>
             </div>
         </form>
-
 
         {{ $this->table }}
     </div>
