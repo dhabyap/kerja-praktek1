@@ -22,6 +22,8 @@ use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\BookingResource\Pages;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Tables\Filters\Filter;
+use Filament\Tables\Columns\Summarizers;
+
 
 class BookingResource extends Resource
 {
@@ -89,8 +91,22 @@ class BookingResource extends Resource
                 TextColumn::make('keterangan')->label('Ketengaran')->sortable(),
                 TextColumn::make('user.name')->label('Nama Admin')->searchable()->sortable(),
                 TextColumn::make('unit.nama')->label('Unit')->sortable(),
-                TextColumn::make('harga_cash')->money('IDR')->sortable(),
-                TextColumn::make('harga_transfer')->money('IDR')->sortable(),
+                TextColumn::make('harga_cash')
+                    ->money('IDR')
+                    ->sortable()
+                    ->summarize([
+                        Summarizers\Sum::make()
+                            ->money('IDR')
+                            ->label('Total Cash')
+                    ]),
+                TextColumn::make('harga_transfer')
+                    ->money('IDR')
+                    ->sortable()
+                    ->summarize([
+                        Summarizers\Sum::make()
+                            ->money('IDR')
+                            ->label('Total Transfer')
+                    ]),
                 TextColumn::make('unit.appartement.nama')->label('Nama Appartement')->sortable(),
             ])
             ->filters([
@@ -113,7 +129,6 @@ class BookingResource extends Resource
                             ->when($data['tanggal_until'], fn($q, $until) => $q->whereDate('tanggal', '<=', $until));
                     }),
 
-                // Filter Unit
                 Filter::make('unit_id')
                     ->form([
                         Select::make('unit_id')
@@ -126,7 +141,6 @@ class BookingResource extends Resource
                         return $query->when($data['unit_id'], fn($q, $unitId) => $q->where('unit_id', $unitId));
                     }),
 
-                // Filter User
                 Filter::make('user_id')
                     ->form([
                         Select::make('user_id')
@@ -148,11 +162,6 @@ class BookingResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
-                // Tables\Actions\Action::make('downloadInvoice')
-                //     ->label('Download Invoice')
-                //     ->icon('heroicon-o-arrow-down-tray')
-                //     ->url(fn($record) => route('booking.download.invoice', ['booking' => $record->id]))
-                //     ->openUrlInNewTab(),
             ])
             ->bulkActions([]);
     }

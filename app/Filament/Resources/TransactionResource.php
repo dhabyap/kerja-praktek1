@@ -22,6 +22,7 @@ use App\Filament\Resources\TransactionResource\Pages\ListTransactions;
 use Illuminate\Support\Facades\Log;
 use Filament\Tables\Filters\Filter;
 use Filament\Facades\Filament;
+use Filament\Tables\Columns\Summarizers;
 
 
 class TransactionResource extends Resource
@@ -121,7 +122,12 @@ class TransactionResource extends Resource
                     ->sortable(),
                 TextColumn::make('harga')
                     ->money('IDR')
-                    ->sortable(),
+                    ->sortable()
+                    ->summarize([
+                        Summarizers\Sum::make()
+                            ->money('IDR')
+                            ->label('Total')
+                    ]),
                 TextColumn::make('tipe_pembayaran')
                     ->label('Tipe Pembayaran')
                     ->sortable(),
@@ -139,7 +145,6 @@ class TransactionResource extends Resource
                             ->when($data['tanggal_from'], fn($q, $from) => $q->whereDate('tanggal', '>=', $from))
                             ->when($data['tanggal_until'], fn($q, $until) => $q->whereDate('tanggal', '<=', $until));
                     }),
-                // Filter Unit
                 Filter::make('unit_id')
                     ->form([
                         Select::make('unit_id')
@@ -151,8 +156,6 @@ class TransactionResource extends Resource
                     ->query(function ($query, array $data) {
                         return $query->when($data['unit_id'], fn($q, $unitId) => $q->where('unit_id', $unitId));
                     }),
-
-                // Filter User
                 Filter::make('user_id')
                     ->form([
                         Select::make('user_id')
@@ -169,7 +172,7 @@ class TransactionResource extends Resource
                 Tables\Actions\Action::make('downloadExcel')
                     ->label('Download Excel')
                     ->icon('heroicon-o-arrow-down-tray')
-                    ->url(fn() => route('transaksi.export', request()->all())) // Menyertakan filter yang ada
+                    ->url(fn() => route('transaksi.export', request()->all()))
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
