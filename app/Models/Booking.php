@@ -9,6 +9,11 @@ class Booking extends Model
 {
     use HasFactory;
     protected $guarded = [];
+    protected $dates = ['tanggal'];
+    // atau untuk Laravel versi baru:
+    protected $casts = [
+        'tanggal' => 'datetime',
+    ];
 
     public function transactions()
     {

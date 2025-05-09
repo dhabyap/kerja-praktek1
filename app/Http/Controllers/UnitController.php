@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\unit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class UnitController extends Controller
 {
@@ -34,9 +35,26 @@ class UnitController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(unit $unit)
+    public function show(Unit $unit)
     {
-        //
+        // Ambil tahun dan bulan saat ini sebagai default
+        $year = request('year', now()->year);
+        $month = request('month', now()->month);
+    
+        $startDate = Carbon::create($year, $month, 1)->startOfMonth();
+        $endDate = $startDate->copy()->endOfMonth();
+    
+        // Load relasi dengan filter tanggal
+        $unit->load([
+            'bookings' => function($q) use ($startDate, $endDate) {
+                $q->whereBetween('tanggal', [$startDate, $endDate]);
+            },
+            'transactions' => function($q) use ($startDate, $endDate) {
+                $q->whereBetween('tanggal', [$startDate, $endDate]);
+            }
+        ]);
+    
+        return view('units.detail', compact('unit'));
     }
 
     /**

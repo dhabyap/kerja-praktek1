@@ -3,6 +3,7 @@
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TransactionExportController;
+use App\Http\Controllers\UnitController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BookingExportController;
 
@@ -28,6 +29,7 @@ Route::get('/admin/bookings/{booking}/download-invoice', [InvoiceController::cla
 Route::get('/booking/export', [BookingExportController::class, 'export'])->name('booking.export');
 Route::get('/transaksi/export', [TransactionExportController::class, 'export'])->name('transaksi.export');
 
+Route::get('/units/{unit}', [UnitController::class, 'show'])->name('unit.detail');
 
 
 // Route::get('admin', [DashboardController::class, 'index'])->name('filament.admin.pages.dashboard');

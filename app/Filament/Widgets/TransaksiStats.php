@@ -20,6 +20,11 @@ class TransaksiStats extends BaseWidget
         $user = auth()->user();
         $now = Carbon::now();
 
+        if ($user->can('admin-local')) {
+            // Jika admin-local, return array kosong (hide widget)
+            return [];
+        }
+
         // Pastikan format tanggal benar
         $startDate = $this->tanggal
             ? Carbon::parse($this->tanggal)->startOfMonth()
@@ -29,12 +34,7 @@ class TransaksiStats extends BaseWidget
             ? Carbon::parse($this->tanggal)->endOfMonth()
             : $now->copy()->endOfMonth();
 
-        // Debug: tampilkan range tanggal yang digunakan
-        \Log::debug('Filter Date Range:', [
-            'start' => $startDate->format('Y-m-d H:i:s'),
-            'end' => $endDate->format('Y-m-d H:i:s'),
-            'input' => $this->tanggal
-        ]);
+      
 
         $query = Transaction::whereBetween('tanggal', [$startDate, $endDate]);
 
@@ -42,13 +42,8 @@ class TransaksiStats extends BaseWidget
             $query->whereHas('unit', fn($q) => $q->where('appartement_id', $user->appartement_id));
         }
 
-        // Debug: tampilkan SQL query yang dihasilkan
-        \Log::debug('SQL Query:', ['query' => $query->toSql(), 'bindings' => $query->getBindings()]);
 
         $transactions = $query->get();
-
-        // Debug: tampilkan data yang ditemukan
-        \Log::debug('Transactions Found:', $transactions->toArray());
 
         $transactionsByType = $transactions->groupBy('type');
         $sumsByType = $transactionsByType->map(function ($transactions) {

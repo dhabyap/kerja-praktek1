@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Resources\UnitResource;
 use App\Models\Appartement;
 use App\Models\Unit;
 use Filament\Pages\Page;
@@ -84,43 +85,77 @@ class UnitReport extends Page implements Tables\Contracts\HasTable
     protected function getTableColumns(): array
     {
         return [
-            TextColumn::make('nama')->label('Nama Unit'),
-            TextColumn::make('appartement.nama')->label('Nama Appartement'),
+            TextColumn::make('nama')
+                ->label('Nama Unit')
+                ->sortable(),
+            // ->url(function ($record) {
+            //     return UnitResource::getUrl('view', ['record' => $record]);
+            // })
+            // ->openUrlInNewTab(false)
+            // ->color('primary'),
 
-            TextColumn::make('total_booking')->label('Jumlah Booking')
+            TextColumn::make('appartement.nama')
+                ->label('Nama Appartement')
+                ->sortable(),
+
+            TextColumn::make('total_booking')
+                ->label('Jumlah Booking')
+                ->sortable()
                 ->getStateUsing(fn($record) => $record->bookings->count()),
 
-            TextColumn::make('pendapatan_cash')->label('Pendapatan Cash')
+            TextColumn::make('pendapatan_cash')
+                ->label('Pendapatan Cash')
                 ->money('IDR', true)
+                ->sortable()
                 ->getStateUsing(fn($record) => $record->bookings->sum('harga_cash')),
 
-            TextColumn::make('pendapatan_transfer')->label('Pendapatan Transfer')
+            TextColumn::make('pendapatan_transfer')
+                ->label('Pendapatan Transfer')
                 ->money('IDR', true)
+                ->sortable()
                 ->getStateUsing(fn($record) => $record->bookings->sum('harga_transfer')),
 
-            TextColumn::make('total_pendapatan')->label('Total Pendapatan')
+            TextColumn::make('total_pendapatan')
+                ->label('Total Pendapatan')
                 ->money('IDR', true)
+                ->sortable()
                 ->getStateUsing(function ($record) {
                     return $record->bookings->sum('harga_cash') + $record->bookings->sum('harga_transfer');
                 }),
 
-            TextColumn::make('pengeluaran')->label('Pengeluaran')
+            TextColumn::make('pengeluaran')
+                ->label('Pengeluaran')
                 ->money('IDR', true)
+                ->sortable()
                 ->getStateUsing(fn($record) => $record->transactions->sum('harga')),
 
-            TextColumn::make('keuntungan')->label('Keuntungan')
+            TextColumn::make('keuntungan')
+                ->label('Keuntungan')
                 ->money('IDR', true)
+                ->sortable()
                 ->getStateUsing(function ($record) {
                     $total = $record->bookings->sum('harga_cash') + $record->bookings->sum('harga_transfer');
                     return max(0, $total - $record->transactions->sum('harga'));
                 }),
 
-            TextColumn::make('kerugian')->label('Kerugian')
+            TextColumn::make('kerugian')
+                ->label('Kerugian')
                 ->money('IDR', true)
+                ->sortable()
                 ->getStateUsing(function ($record) {
                     $total = $record->bookings->sum('harga_cash') + $record->bookings->sum('harga_transfer');
                     return max(0, $record->transactions->sum('harga') - $total);
                 }),
         ];
+    }
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->can('super-admin') || auth()->user()->can('admin-global');
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()->can('super-admin') || auth()->user()->can('admin-global');
     }
 }

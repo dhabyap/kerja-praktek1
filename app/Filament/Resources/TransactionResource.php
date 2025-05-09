@@ -167,6 +167,21 @@ class TransactionResource extends Resource
                     ->query(function ($query, array $data) {
                         return $query->when($data['user_id'], fn($q, $userId) => $q->where('user_id', $userId));
                     }),
+                Filter::make('type')
+                    ->form([
+                        Select::make('type')
+                            ->label('Pilih Tipe')
+                            ->options([
+                                'token' => 'Token dan Air',
+                                'sewa_unit' => 'Sewa Unit',
+                                'gaji' => 'Gaji',
+                                'lainnya' => 'Lainnya',
+                            ])
+                            ->searchable()
+                            ->preload(),
+                    ])->query(function ($query, array $data) {
+                        return $query->when($data['type'], fn($q, $type) => $q->where('type', $type));
+                    }),
             ])
             ->headerActions([
                 Tables\Actions\Action::make('downloadExcel')

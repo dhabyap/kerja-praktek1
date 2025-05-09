@@ -85,7 +85,6 @@ class UnitResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
         ];
     }
 
@@ -94,6 +93,7 @@ class UnitResource extends Resource
         return [
             'index' => Pages\ListUnits::route('/'),
             'create' => Pages\CreateUnit::route('/create'),
+            'view' => Pages\ViewUnit::route('/{record}'),
             'edit' => Pages\EditUnit::route('/{record}/edit'),
         ];
     }
