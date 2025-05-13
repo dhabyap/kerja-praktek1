@@ -38,15 +38,40 @@ class TransactionResource extends Resource
         $query = parent::getEloquentQuery();
 
         if (auth()->user()->can('admin-local') || auth()->user()->can('admin-global')) {
-            return $query->whereHas('unit', function ($q) {
+            $query = $query->whereHas('unit', function ($q) {
                 $q->where('appartement_id', auth()->user()->appartement_id);
             });
         }
-        $query = $query->selectRaw('*, SUM(CASE WHEN tipe_pembayaran = "cash" THEN harga ELSE 0 END) AS total_cash, kode_invoice as invoice')
+        
+        $query = $query->select([
+                'id',
+                'kode_invoice',
+                'unit_id',
+                'user_id',
+                'type',
+                'tipe_pembayaran',
+                'keterangan',
+                'tanggal',
+                'created_at',
+                'updated_at',
+            ])
+            ->selectRaw('SUM(CASE WHEN tipe_pembayaran = "cash" THEN harga ELSE 0 END) AS total_cash')
             ->selectRaw('SUM(CASE WHEN tipe_pembayaran = "transfer" THEN harga ELSE 0 END) AS total_transfer')
-            ->groupBy('id', 'invoice');
-
+            ->groupBy(
+                'id',
+                'kode_invoice',
+                'unit_id',
+                'user_id',
+                'type',
+                'tipe_pembayaran',
+                'keterangan',
+                'tanggal',
+                'created_at',
+                'updated_at'
+            );
+        
         return $query;
+        
     }
 
     public static function form(Form $form): Form
@@ -101,7 +126,7 @@ class TransactionResource extends Resource
                     ->with(['unit.appartement', 'user'])
             )
             ->columns([
-                TextColumn::make('invoice')
+                TextColumn::make('kode_invoice')
                     ->searchable()
                     ->sortable(),
 
