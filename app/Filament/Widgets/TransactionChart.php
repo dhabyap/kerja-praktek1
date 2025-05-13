@@ -28,54 +28,50 @@ class TransactionChart extends ChartWidget
 
         $appartements = $appartements->get();
 
-        $result = [];
-        $labels = [];
-
         // Generate labels tanggal
+        $labels = [];
         for ($date = $startOfMonth->copy(); $date <= $endOfMonth; $date->addDay()) {
             $labels[] = $date->format('d M');
         }
 
-        foreach ($appartements as $appartement) {
-            $dataMasuk = [];
-            $dataKeluar = [];
+        // Data aggregate untuk semua apartemen
+        $dataMasuk = array_fill(0, count($labels), 0);
+        $dataKeluar = array_fill(0, count($labels), 0);
 
-            for ($date = $startOfMonth->copy(); $date <= $endOfMonth; $date->addDay()) {
-                // Query uang masuk (booking)
+        foreach ($appartements as $appartement) {
+            foreach ($labels as $index => $label) {
+                $date = $startOfMonth->copy()->addDays($index);
+
                 $masukQuery = Booking::whereDate('tanggal', $date)
                     ->whereHas('unit', function ($q) use ($appartement) {
                         $q->where('appartement_id', $appartement->id);
                     });
 
-                // Query uang keluar (transaction)
                 $keluarQuery = Transaction::whereDate('tanggal', $date)
                     ->whereHas('unit', function ($q) use ($appartement) {
                         $q->where('appartement_id', $appartement->id);
                     });
 
-                $dataMasuk[] = $masukQuery->sum('harga_cash') + $masukQuery->sum('harga_transfer');
-                $dataKeluar[] = $keluarQuery->sum('harga');
+                $dataMasuk[$index] += $masukQuery->sum('harga_cash') + $masukQuery->sum('harga_transfer');
+                $dataKeluar[$index] += $keluarQuery->sum('harga');
             }
-
-            $result[] = [
-                'appartement' => $appartement->nama,
-                'labels' => $labels,
-                'datasets' => [
-                    [
-                        'label' => 'Uang Masuk',
-                        'data' => $dataMasuk,
-                        'backgroundColor' => 'rgba(54, 162, 235, 0.6)',
-                    ],
-                    [
-                        'label' => 'Uang Keluar',
-                        'data' => $dataKeluar,
-                        'backgroundColor' => 'rgba(255, 99, 132, 0.6)',
-                    ],
-                ]
-            ];
         }
 
-        return $result;
+        return [
+            'labels' => $labels,
+            'datasets' => [
+                [
+                    'label' => 'Total Uang Masuk',
+                    'data' => $dataMasuk,
+                    'backgroundColor' => 'rgba(54, 162, 235, 0.6)',
+                ],
+                [
+                    'label' => 'Total Uang Keluar',
+                    'data' => $dataKeluar,
+                    'backgroundColor' => 'rgba(255, 99, 132, 0.6)',
+                ],
+            ]
+        ];
     }
 
     protected function getType(): string

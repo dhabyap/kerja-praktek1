@@ -87,12 +87,16 @@ class UnitReport extends Page implements Tables\Contracts\HasTable
         return [
             TextColumn::make('nama')
                 ->label('Nama Unit')
-                ->sortable(),
-            // ->url(function ($record) {
-            //     return UnitResource::getUrl('view', ['record' => $record]);
-            // })
-            // ->openUrlInNewTab(false)
-            // ->color('primary'),
+                ->sortable()
+                ->url(function ($record) {
+                    return UnitResource::getUrl('view', [
+                        'record' => $record,
+                        'filterMonth' => $this->filterMonth,
+                        'filterYear' => $this->filterYear,
+                    ]);
+                })
+                ->openUrlInNewTab(false)
+                ->color('primary'),
 
             TextColumn::make('appartement.nama')
                 ->label('Nama Appartement')
