@@ -42,6 +42,9 @@ class TransactionResource extends Resource
                 $q->where('appartement_id', auth()->user()->appartement_id);
             });
         }
+        $query = $query->selectRaw('*, SUM(CASE WHEN tipe_pembayaran = "cash" THEN harga ELSE 0 END) AS total_cash')
+            ->selectRaw('SUM(CASE WHEN tipe_pembayaran = "transfer" THEN harga ELSE 0 END) AS total_transfer')
+            ->groupBy('id');
 
         return $query;
     }
@@ -101,39 +104,61 @@ class TransactionResource extends Resource
                 TextColumn::make('kode_invoice')
                     ->searchable()
                     ->sortable(),
+
                 TextColumn::make('tanggal')
                     ->date()
                     ->sortable(),
+
                 TextColumn::make('id')
                     ->label('Unit')
                     ->sortable()
                     ->formatStateUsing(function ($record) {
                         return $record->booking?->unit?->nama ?? $record->unit?->nama ?? '-';
                     }),
+
                 TextColumn::make('created_at')
                     ->label('Appartement')
                     ->sortable()
                     ->formatStateUsing(function ($record) {
                         return $record->booking?->unit?->appartement?->nama ?? $record->unit?->appartement?->nama ?? '-';
                     }),
+
                 TextColumn::make('user.name')
                     ->label('Nama Admin')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('harga')
-                    ->money('IDR')
+
+                // Kolom untuk harga cash
+                TextColumn::make('total_cash')
+                    ->label('Total Cash')
                     ->sortable()
+                    ->money('IDR')
                     ->summarize([
                         Summarizers\Sum::make()
-                            ->money('IDR')
-                            ->label('Total')
+                            ->label('Total Cash')
+                            ->money('IDR'),
                     ]),
+
+                // Display the total for 'transfer' payments
+                TextColumn::make('total_transfer')
+                    ->label('Total Transfer')
+                    ->sortable()
+                    ->money('IDR')
+                    ->summarize([
+                        Summarizers\Sum::make()
+                            ->label('Total Transfer')
+                            ->money('IDR'),
+                    ]),
+
                 TextColumn::make('tipe_pembayaran')
                     ->label('Tipe Pembayaran')
                     ->sortable(),
+
                 TextColumn::make('type'),
+
                 TextColumn::make('keterangan'),
             ])
+
             ->filters([
                 Filter::make('tanggal_range')
                     ->form([
