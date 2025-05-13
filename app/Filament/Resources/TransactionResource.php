@@ -44,7 +44,7 @@ class TransactionResource extends Resource
         }
         $query = $query->selectRaw('*, SUM(CASE WHEN tipe_pembayaran = "cash" THEN harga ELSE 0 END) AS total_cash, kode_invoice as invoice')
             ->selectRaw('SUM(CASE WHEN tipe_pembayaran = "transfer" THEN harga ELSE 0 END) AS total_transfer')
-            ->groupBy('id');
+            ->groupBy('id', 'invoice');
 
         return $query;
     }
