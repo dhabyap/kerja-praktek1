@@ -42,7 +42,7 @@ class TransactionResource extends Resource
                 $q->where('appartement_id', auth()->user()->appartement_id);
             });
         }
-        $query = $query->selectRaw('*, SUM(CASE WHEN tipe_pembayaran = "cash" THEN harga ELSE 0 END) AS total_cash')
+        $query = $query->selectRaw('*, SUM(CASE WHEN tipe_pembayaran = "cash" THEN harga ELSE 0 END) AS total_cash, kode_invoice as invoice')
             ->selectRaw('SUM(CASE WHEN tipe_pembayaran = "transfer" THEN harga ELSE 0 END) AS total_transfer')
             ->groupBy('id');
 
@@ -101,7 +101,7 @@ class TransactionResource extends Resource
                     ->with(['unit.appartement', 'user'])
             )
             ->columns([
-                TextColumn::make('kode_invoice')
+                TextColumn::make('invoice')
                     ->searchable()
                     ->sortable(),
 
