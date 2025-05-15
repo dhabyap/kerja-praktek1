@@ -36,15 +36,15 @@ class AppartementChart extends BarChartWidget
             $labels[] = $date->format('d M');
 
             $cash = Booking::whereDate('tanggal', $date)
-                ->whereHas('unit', fn($q) => $q->where('appartement_id', $this->appartement->id))
+                ->whereHas('user', fn($q) => $q->where('appartement_id', $this->appartement->id))
                 ->sum(\DB::raw('harga_cash'));
 
             $tf = Booking::whereDate('tanggal', $date)
-                ->whereHas('unit', fn($q) => $q->where('appartement_id', $this->appartement->id))
+                ->whereHas('user', fn($q) => $q->where('appartement_id', $this->appartement->id))
                 ->sum(\DB::raw('harga_transfer'));
 
             $keluar = Transaction::whereDate('tanggal', $date)
-                ->whereHas('unit', fn($q) => $q->where('appartement_id', $this->appartement->id))
+                ->whereHas('user', fn($q) => $q->where('appartement_id', $this->appartement->id))
                 ->sum('harga');
 
             $dataMasuk[] = $cash + $tf;

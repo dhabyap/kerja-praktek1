@@ -43,12 +43,12 @@ class TransactionChart extends ChartWidget
                 $date = $startOfMonth->copy()->addDays($index);
 
                 $masukQuery = Booking::whereDate('tanggal', $date)
-                    ->whereHas('unit', function ($q) use ($appartement) {
+                    ->whereHas('user', function ($q) use ($appartement) {
                         $q->where('appartement_id', $appartement->id);
                     });
 
                 $keluarQuery = Transaction::whereDate('tanggal', $date)
-                    ->whereHas('unit', function ($q) use ($appartement) {
+                    ->whereHas('user', function ($q) use ($appartement) {
                         $q->where('appartement_id', $appartement->id);
                     });
 

@@ -39,7 +39,7 @@ class TransaksiStats extends BaseWidget
         $query = Transaction::whereBetween('tanggal', [$startDate, $endDate]);
 
         if ($user->can('admin-local') || $user->can('admin-global')) {
-            $query->whereHas('unit', fn($q) => $q->where('appartement_id', $user->appartement_id));
+            $query->whereHas('user', fn($q) => $q->where('appartement_id', $user->appartement_id));
         }
 
 

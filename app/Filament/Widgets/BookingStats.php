@@ -21,11 +21,11 @@ class BookingStats extends BaseWidget
         $masukQuery = Booking::whereDate('tanggal', $date);
 
         if ($user->can('admin-local') || $user->can('admin-global')) {
-            $totalTodayQuery->whereHas('unit', function ($q) use ($user) {
+            $totalTodayQuery->whereHas('user', function ($q) use ($user) {
                 $q->where('appartement_id', $user->appartement_id);
             });
 
-            $masukQuery->whereHas('unit', function ($q) use ($user) {
+            $masukQuery->whereHas('user', function ($q) use ($user) {
                 $q->where('appartement_id', $user->appartement_id);
             });
         }

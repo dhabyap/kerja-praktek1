@@ -38,23 +38,23 @@ class TransactionResource extends Resource
         $query = parent::getEloquentQuery();
 
         if (auth()->user()->can('admin-local') || auth()->user()->can('admin-global')) {
-            $query = $query->whereHas('unit', function ($q) {
+            $query = $query->whereHas('user', function ($q) {
                 $q->where('appartement_id', auth()->user()->appartement_id);
             });
         }
-        
+
         $query = $query->select([
-                'id',
-                'kode_invoice',
-                'unit_id',
-                'user_id',
-                'type',
-                'tipe_pembayaran',
-                'keterangan',
-                'tanggal',
-                'created_at',
-                'updated_at',
-            ])
+            'id',
+            'kode_invoice',
+            'unit_id',
+            'user_id',
+            'type',
+            'tipe_pembayaran',
+            'keterangan',
+            'tanggal',
+            'created_at',
+            'updated_at',
+        ])
             ->selectRaw('SUM(CASE WHEN tipe_pembayaran = "cash" THEN harga ELSE 0 END) AS total_cash')
             ->selectRaw('SUM(CASE WHEN tipe_pembayaran = "transfer" THEN harga ELSE 0 END) AS total_transfer')
             ->groupBy(
@@ -69,9 +69,9 @@ class TransactionResource extends Resource
                 'created_at',
                 'updated_at'
             );
-        
+
         return $query;
-        
+
     }
 
     public static function form(Form $form): Form

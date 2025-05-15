@@ -41,7 +41,7 @@ class BookingStatsLivewire extends Widget implements Forms\Contracts\HasForms
         $query = Booking::whereDate('tanggal', $date);
 
         if ($user->can('admin-local') || $user->can('admin-global')) {
-            $query->whereHas('unit', fn($q) => $q->where('appartement_id', $user->appartement_id));
+            $query->whereHas('user', fn($q) => $q->where('appartement_id', $user->appartement_id));
         }
 
         $total = $query->count();

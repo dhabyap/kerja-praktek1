@@ -25,11 +25,11 @@ class DashboardOverview extends BaseWidget
         $keluar = Transaction::query();
 
         if ($user->can('admin-local') || $user->can('admin-global')) {
-            $masuk->whereHas('unit', function ($q) use ($user) {
+            $masuk->whereHas('user', function ($q) use ($user) {
                 $q->where('appartement_id', $user->appartement_id);
             });
 
-            $keluar->whereHas('unit', function ($q) use ($user) {
+            $keluar->whereHas('user', function ($q) use ($user) {
                 $q->where('appartement_id', $user->appartement_id);
             });
         }

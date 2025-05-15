@@ -27,7 +27,7 @@ class BookingChart extends ChartWidget
             ->whereBetween('tanggal', [$startOfMonth, $endOfMonth]);
 
         if ($user->can('admin-local') || $user->can('admin-global')) {
-            $bookingQuery->whereHas('unit', function ($q) use ($user) {
+            $bookingQuery->whereHas('user', function ($q) use ($user) {
                 $q->where('appartement_id', $user->appartement_id);
             });
         }
