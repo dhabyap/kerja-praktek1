@@ -34,7 +34,7 @@ class TransaksiStats extends BaseWidget
             ? Carbon::parse($this->tanggal)->endOfMonth()
             : $now->copy()->endOfMonth();
 
-      
+
 
         $query = Transaction::whereBetween('tanggal', [$startDate, $endDate]);
 
@@ -58,13 +58,22 @@ class TransaksiStats extends BaseWidget
             $totalAll += $sum;
 
             $cards[] = Card::make("Total Pengeluaran $label", 'Rp ' . number_format($sum, 0, ',', '.'))
-                ->color('danger');
+                ->color('danger')
+                ->url(route('filament.admin.resources.transactions.index', [
+                    'tableFilters[type][value]' => $value
+                ]));
         }
+
 
         $monthName = $startDate->translatedFormat('F Y');
         $cards[] = Card::make("Total Pengeluaran Bulan Ini", 'Rp ' . number_format($totalAll, 0, ',', '.'))
             ->description($monthName)
-            ->color('danger');
+            ->color('danger')
+            ->url(route('filament.admin.resources.transactions.index', [
+                'tableFilters[tanggal_range][tanggal_from]' => $startDate->toDateString(),
+                'tableFilters[tanggal_range][tanggal_until]' => $endDate->toDateString(),
+            ]));
+
 
         return $cards;
     }

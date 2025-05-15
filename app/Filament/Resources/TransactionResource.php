@@ -219,7 +219,7 @@ class TransactionResource extends Resource
                     }),
                 Filter::make('type')
                     ->form([
-                        Select::make('type')
+                        Select::make('value') // Ganti dari 'type' ke 'value'
                             ->label('Pilih Tipe')
                             ->options([
                                 'token' => 'Token dan Air',
@@ -229,9 +229,12 @@ class TransactionResource extends Resource
                             ])
                             ->searchable()
                             ->preload(),
-                    ])->query(function ($query, array $data) {
-                        return $query->when($data['type'], fn($q, $type) => $q->where('type', $type));
+                    ])
+                    ->query(function ($query, array $data) {
+                        return $query->when($data['value'], fn($q, $value) => $q->where('type', $value));
                     }),
+
+
             ])
             ->headerActions([
                 Tables\Actions\Action::make('downloadExcel')
