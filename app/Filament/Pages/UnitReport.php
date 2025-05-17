@@ -73,6 +73,87 @@ class UnitReport extends Page implements Tables\Contracts\HasTable
             ->with([
                 'bookings' => fn($q) => $q->whereBetween('tanggal', [$startDate, $endDate]),
                 'transactions' => fn($q) => $q->whereBetween('tanggal', [$startDate, $endDate]),
+                'appartement',
+            ])
+            ->select('units.*')
+            ->selectRaw('
+                (
+                    SELECT COALESCE(SUM(harga_cash), 0)
+                    FROM bookings
+                    WHERE bookings.unit_id = units.id
+                    AND bookings.tanggal BETWEEN ? AND ?
+                ) as pendapatan_cash,
+                (
+                    SELECT COALESCE(SUM(harga_transfer), 0)
+                    FROM bookings
+                    WHERE bookings.unit_id = units.id
+                    AND bookings.tanggal BETWEEN ? AND ?
+                ) as pendapatan_transfer,
+                (
+                    SELECT COALESCE(SUM(harga_cash + harga_transfer), 0)
+                    FROM bookings
+                    WHERE bookings.unit_id = units.id
+                    AND bookings.tanggal BETWEEN ? AND ?
+                ) as total_pendapatan,
+                (
+                    SELECT COALESCE(SUM(harga), 0)
+                    FROM transactions
+                    WHERE transactions.unit_id = units.id
+                    AND transactions.tanggal BETWEEN ? AND ?
+                ) as pengeluaran,
+                GREATEST(
+                    (
+                        SELECT COALESCE(SUM(harga_cash + harga_transfer), 0)
+                        FROM bookings
+                        WHERE bookings.unit_id = units.id
+                        AND bookings.tanggal BETWEEN ? AND ?
+                    ) -
+                    (
+                        SELECT COALESCE(SUM(harga), 0)
+                        FROM transactions
+                        WHERE transactions.unit_id = units.id
+                        AND transactions.tanggal BETWEEN ? AND ?
+                    ),
+                0) as keuntungan,
+                GREATEST(
+                    (
+                        SELECT COALESCE(SUM(harga), 0)
+                        FROM transactions
+                        WHERE transactions.unit_id = units.id
+                        AND transactions.tanggal BETWEEN ? AND ?
+                    ) -
+                    (
+                        SELECT COALESCE(SUM(harga_cash + harga_transfer), 0)
+                        FROM bookings
+                        WHERE bookings.unit_id = units.id
+                        AND bookings.tanggal BETWEEN ? AND ?
+                    ),
+                0) as kerugian,
+                    (
+                    SELECT COUNT(*)
+                    FROM bookings
+                    WHERE bookings.unit_id = units.id
+                    AND bookings.tanggal BETWEEN ? AND ?
+                ) as total_booking
+            ', [
+                $startDate,
+                $endDate,  // pendapatan_cash
+                $startDate,
+                $endDate,  // pendapatan_transfer
+                $startDate,
+                $endDate,  // total_pendapatan
+                $startDate,
+                $endDate,  // pengeluaran
+                $startDate,
+                $endDate,  // keuntungan: bookings
+                $startDate,
+                $endDate,  // keuntungan: transactions
+                $startDate,
+                $endDate,  // kerugian: transactions
+                $startDate,
+                $endDate,  // kerugian: bookings
+                $startDate,
+                $endDate,  // kerugian: bookings
             ]);
 
         if ($this->filterAppartement) {
