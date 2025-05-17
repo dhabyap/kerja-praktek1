@@ -65,9 +65,11 @@ class DashboardOverview extends BaseWidget
                 ->descriptionColor($laba >= 0 ? 'success' : 'danger'),
 
             Card::make('Total Uang Cash Bulan Ini', 'Rp ' . number_format($cash - $cash_pengeluaran, 0, ',', '.'))
+                ->description(number_format($cash, 0, ',', '.') . ' - ' . number_format($cash_pengeluaran, 0, ',', '.'))
                 ->color('primary'),
 
             Card::make('Total Uang Transfer Bulan Ini', 'Rp ' . number_format($tf - $tf_pengeluaran, 0, ',', '.'))
+                ->description(number_format($tf, 0, ',', '.') . ' - ' . number_format($tf_pengeluaran, 0, ',', '.'))
                 ->color('primary'),
         ];
     }
