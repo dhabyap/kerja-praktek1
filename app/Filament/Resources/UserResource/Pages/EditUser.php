@@ -18,8 +18,6 @@ class EditUser extends EditRecord
     }
     protected function mutatingFormDataBeforeCreate(array $data): array
     {
-        dd($data);
-
         return $data;
     }
 }

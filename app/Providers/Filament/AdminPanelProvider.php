@@ -22,6 +22,8 @@ use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use Filament\Navigation\UserMenuItem;
+
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -38,6 +40,12 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->pages([
                 Pages\Dashboard::class,
+            ])
+            ->userMenuItems([
+                UserMenuItem::make()
+                    ->label('Profile')
+                    ->url(fn() => route('filament.admin.pages.profile'))
+                    ->icon('heroicon-o-user'),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
@@ -59,9 +67,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ])
-            // ->navigationItems($this->getCustomNavigationItems())
-        ;
+            ]);
     }
 
 
