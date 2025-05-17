@@ -25,7 +25,7 @@ class DashboardOverview extends BaseWidget
         $keluar = Transaction::query();
 
         if ($user->can('admin-local') || $user->can('admin-global')) {
-            $masuk->whereHas('user', function ($q) use ($user) {
+            $masuk->whereHas('unit', function ($q) use ($user) {
                 $q->where('appartement_id', $user->appartement_id);
             });
 
@@ -38,6 +38,7 @@ class DashboardOverview extends BaseWidget
         $cash = $masuk->whereBetween('tanggal', [$startOfMonth, $endOfMonth])->sum('harga_cash');
         $income = $tf + $cash;
         $expense = $keluar->whereBetween('tanggal', [$startOfMonth, $endOfMonth])->sum('harga');
+        $cash_pengeluaran = $keluar->whereBetween('tanggal', [$startOfMonth, $endOfMonth])->where('tipe_pembayaran', 'cash')->sum('harga');
 
         $todayBooking = $masuk->count();
         $laba = $income - $expense;
@@ -45,26 +46,21 @@ class DashboardOverview extends BaseWidget
         return [
             Card::make('Booking Bulan Ini', $todayBooking)
                 ->description($now->format('M Y'))
-                ->color('info')
-                ->extraAttributes([
-                    'class' => 'bg-blue-100 text-blue-800',
-                ]),
+                ->color('info'),
 
             Card::make('Uang Masuk Bulan Ini', 'Rp ' . number_format($income, 0, ',', '.'))
-                ->color('success')
-                ->extraAttributes([
-                    'class' => 'bg-green-100 text-green-800',
-                ]),
+                ->color('success'),
 
             Card::make('Uang Keluar Bulan Ini', 'Rp ' . number_format($expense, 0, ',', '.'))
-                ->color('warning')
-                ->extraAttributes([
-                    'class' => 'bg-yellow-100 text-yellow-800',
-                ]),
+                ->color('warning'),
 
             Card::make('Laba Bulan Ini', 'Rp ' . number_format($laba, 0, ',', '.'))
                 ->description($laba >= 0 ? 'Untung' : 'Rugi')
                 ->descriptionColor($laba >= 0 ? 'success' : 'danger'),
+
+            Card::make('Cash Bulan Ini', 'Rp ' . number_format($cash - $cash_pengeluaran, 0, ',', '.'))
+                ->color('Primary'),
+
         ];
     }
 
