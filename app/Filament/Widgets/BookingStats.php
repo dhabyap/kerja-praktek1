@@ -50,7 +50,7 @@ class BookingStats extends BaseWidget
 
             Card::make('Total Transfer', 'Rp ' . number_format($tf, 0, ',', '.'))
                 ->description($date->format('d M Y'))
-                ->color('danger'),
+                ->color('primary'),
         ];
     }
 
