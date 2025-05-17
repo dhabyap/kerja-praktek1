@@ -18,18 +18,20 @@ class Dashboard extends Page
     {
         $user = auth()->user();
 
-        $appartements = Appartement::query()
-            ->when(
-                $user->can('admin-local') && !$user->can('admin-global'),
-                fn($q) => $q->where('id', $user->appartement_id)
-            )
-            ->get();
+        // Default: super-admin dan admin-global bisa melihat semua
+        $appartementsQuery = Appartement::query();
+
+        // admin-local hanya boleh melihat 1 appartement miliknya
+        if ($user->can('admin-local') || $user->can('admin-global')) {
+            $appartementsQuery->where('id', $user->appartement_id);
+        }
+
+        $appartements = $appartementsQuery->get();
 
         $charts = $appartements->map(function ($appartement) {
             return Livewire::mount(AppartementChart::class, [
                 'appartement' => $appartement,
             ])->getId();
-
         })->toArray();
 
         return array_merge(
@@ -48,7 +50,7 @@ class Dashboard extends Page
         return [
             'appartements' => Appartement::query()
                 ->when(
-                    $user->can('admin-local') && !$user->can('admin-global'),
+                    $user->can('admin-local') || $user->can('admin-global'),
                     fn($q) => $q->where('id', $user->appartement_id)
                 )
                 ->get()
@@ -63,7 +65,7 @@ class Dashboard extends Page
         return [
             'appartements' => Appartement::query()
                 ->when(
-                    $user->can('admin-local') && !$user->can('admin-global'),
+                    $user->can('admin-local') || $user->can('admin-global'),
                     fn($q) => $q->where('id', $user->appartement_id)
                 )
                 ->get()

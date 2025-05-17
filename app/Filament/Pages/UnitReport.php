@@ -38,26 +38,34 @@ class UnitReport extends Page implements Tables\Contracts\HasTable
 
     protected function getFormSchema(): array
     {
+        $user = auth()->user();
+
+        $fields = [
+            Select::make('filterMonth')
+                ->label('Bulan')
+                ->options(
+                    collect(range(1, 12))->mapWithKeys(
+                        fn($m) => [$m => Carbon::create()->month($m)->locale('id')->translatedFormat('F')]
+                    )
+                ),
+            Select::make('filterYear')
+                ->label('Tahun')
+                ->options(array_combine(range(2023, now()->year), range(2023, now()->year))),
+        ];
+
+        if (!($user->can('admin-local') || $user->can('admin-global'))) {
+            $fields[] = Select::make('filterAppartement')
+                ->label('Appartement')
+                ->options(Appartement::all()->pluck('nama', 'id'))
+                ->searchable()
+                ->placeholder('Semua Appartement');
+        }
+
         return [
-            Grid::make(3)->schema([
-                Select::make('filterMonth')
-                    ->label('Bulan')
-                    ->options(
-                        collect(range(1, 12))->mapWithKeys(
-                            fn($m) => [$m => Carbon::create()->month($m)->locale('id')->translatedFormat('F')]
-                        )
-                    ),
-                Select::make('filterYear')
-                    ->label('Tahun')
-                    ->options(array_combine(range(2023, now()->year), range(2023, now()->year))),
-                Select::make('filterAppartement')
-                    ->label('Appartement')
-                    ->options(Appartement::all()->pluck('nama', 'id'))
-                    ->searchable()
-                    ->placeholder('Semua Appartement'),
-            ]),
+            Grid::make(3)->schema($fields),
         ];
     }
+
 
     public function filterData()
     {
@@ -156,8 +164,13 @@ class UnitReport extends Page implements Tables\Contracts\HasTable
                 $endDate,  // kerugian: bookings
             ]);
 
+
+        if (auth()->user()->can('admin-local') || auth()->user()->can('admin-global')) {
+            $query->where('id', auth()->user()->appartement_id);
+        }
+
         if ($this->filterAppartement) {
-            $query->where('appartement_id', $this->filterAppartement);
+            $query->where('id', $this->filterAppartement);
         }
 
         return $query;

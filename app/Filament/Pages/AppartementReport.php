@@ -25,6 +25,7 @@ class AppartementReport extends Page implements Tables\Contracts\HasTable
     public ?string $filterEndDate = null;
     public ?int $filterAppartement = null;
 
+
     public function mount()
     {
         $this->filterStartDate = request()->query('filterStartDate', now()->startOfMonth()->format('Y-m-d'));
@@ -39,6 +40,11 @@ class AppartementReport extends Page implements Tables\Contracts\HasTable
 
         $query = Appartement::query();
 
+        if (auth()->user()->can('admin-local') || auth()->user()->can('admin-global')) {
+            $query->where('id', auth()->user()->appartement_id);
+        }
+
+        // Jika ada filter manual dari query string
         if ($this->filterAppartement) {
             $query->where('id', $this->filterAppartement);
         }
@@ -48,6 +54,7 @@ class AppartementReport extends Page implements Tables\Contracts\HasTable
             'units.transactions' => fn($query) => $query->whereBetween('tanggal', [$startDate, $endDate]),
         ]);
     }
+
 
     protected function getTableColumns(): array
     {

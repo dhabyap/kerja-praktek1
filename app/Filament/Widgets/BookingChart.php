@@ -22,14 +22,14 @@ class BookingChart extends ChartWidget
         $now = Carbon::now();
         $startOfMonth = $now->copy()->startOfMonth();
         $endOfMonth = $now->copy()->endOfMonth();
-
         $bookingQuery = Booking::with('unit')
             ->whereBetween('tanggal', [$startOfMonth, $endOfMonth]);
 
         if ($user->can('admin-local') || $user->can('admin-global')) {
-            $bookingQuery->whereHas('user', function ($q) use ($user) {
+            $bookingQuery->whereHas('unit', function ($q) use ($user) {
                 $q->where('appartement_id', $user->appartement_id);
             });
+
         }
 
         $bookings = $bookingQuery->get()
