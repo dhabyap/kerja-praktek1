@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
@@ -10,38 +11,37 @@ class BookingExportController extends Controller
 {
     public function export(Request $request)
     {
-        $query = Booking::query()
-            ->with('user', 'unit.appartement');
+        $query = Booking::query()->with('user', 'unit.appartement');
 
-        $filters = $request->input('tableFilters', []);
-
-        if (isset($filters['nama']) && !empty($filters['nama'])) {
-            $query->where('nama', 'like', "%" . $filters['nama'] . "%");
+        // Cek parameter langsung dari query string
+        if ($request->has('nama')) {
+            $query->where('nama', 'like', '%' . $request->nama . '%');
         }
 
-        if (isset($filters['tanggal_range']) && is_array($filters['tanggal_range'])) {
-            $tanggalFrom = $filters['tanggal_range']['tanggal_from'] ?? null;
-            $tanggalUntil = $filters['tanggal_range']['tanggal_until'] ?? null;
-
-            if ($tanggalFrom) {
-                $query->whereDate('tanggal', '>=', $tanggalFrom);
-            }
-            if ($tanggalUntil) {
-                $query->whereDate('tanggal', '<=', $tanggalUntil);
-            }
+        if ($request->has('tanggal_from')) {
+            $query->whereDate('tanggal', '>=', $request->tanggal_from);
         }
 
-        // Filter berdasarkan unit
-        if (isset($filters['unit_id']) && !empty($filters['unit_id'])) {
-            $query->where('unit_id', $filters['unit_id']);
+        if ($request->has('tanggal_until')) {
+            $query->whereDate('tanggal', '<=', $request->tanggal_until);
         }
 
-        // Filter berdasarkan user
-        if (isset($filters['user_id']) && !empty($filters['user_id'])) {
-            $query->where('user_id', $filters['user_id']);
+        if ($request->has('unit_id')) {
+            $query->where('unit_id', $request->unit_id);
         }
 
-        // Ekspor ke Excel
+        if ($request->has('user_id')) {
+            $query->where('user_id', $request->user_id);
+        }
+
+        if ($request->has('filterMonth')) {
+            $query->whereMonth('tanggal', $request->filterMonth);
+        }
+
+        if ($request->has('filterYear')) {
+            $query->whereYear('tanggal', $request->filterYear);
+        }
+
         return Excel::download(new BookingsExport($query->get()), 'bookings.xlsx');
     }
 }

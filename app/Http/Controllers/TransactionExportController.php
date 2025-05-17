@@ -10,32 +10,34 @@ class TransactionExportController extends Controller
 {
     public function export(Request $request)
     {
-        $filters = $request->input('tableFilters', []);
-        
         $query = Transaction::with(['booking', 'unit', 'user']);
 
-        if (isset($filters['tanggal_range']) && is_array($filters['tanggal_range'])) {
-            $tanggalFrom = $filters['tanggal_range']['tanggal_from'] ?? null;
-            $tanggalUntil = $filters['tanggal_range']['tanggal_until'] ?? null;
+        // Filter berdasarkan tanggal dari filterMonth & filterYear
+        $filterMonth = $request->query('filterMonth');
+        $filterYear = $request->query('filterYear');
 
-            if ($tanggalFrom) {
-                $query->whereDate('tanggal', '>=', $tanggalFrom);
-            }
-            if ($tanggalUntil) {
-                $query->whereDate('tanggal', '<=', $tanggalUntil);
-            }
+        if ($filterMonth && $filterYear) {
+            // Filter berdasarkan bulan dan tahun
+            $query->whereYear('tanggal', $filterYear)
+                ->whereMonth('tanggal', $filterMonth);
         }
 
-        if (!empty($filters['unit_id']['value'])) {
-            $query->where('unit_id', $filters['unit_id']['value']);
+        // Filter unit_id langsung dari query param
+        $unitId = $request->query('unit_id');
+        if ($unitId) {
+            $query->where('unit_id', $unitId);
         }
-        if (!empty($filters['user_id']['value'])) {
-            $query->where('user_id', $filters['user_id']['value']);
+
+        // Kalau mau filter user_id juga bisa tambahkan
+        $userId = $request->query('user_id');
+        if ($userId) {
+            $query->where('user_id', $userId);
         }
 
         $transactions = $query->get();
 
         return Excel::download(new TransactionExport($transactions), 'transactions.xlsx');
     }
+
 
 }

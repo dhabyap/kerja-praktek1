@@ -77,7 +77,7 @@ class BookingListWidget extends BaseWidget
             Action::make('downloadExcel')
                 ->label('Download Excel')
                 ->icon('heroicon-o-arrow-down-tray')
-                ->url(fn() => route('transaksi.export', [
+                ->url(fn() => route('booking.export', [
                     'unit_id' => $this->unitId,
                     'filterMonth' => $this->filterMonth,
                     'filterYear' => $this->filterYear,
