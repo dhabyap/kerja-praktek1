@@ -21,46 +21,54 @@ class DashboardOverview extends BaseWidget
         $startOfMonth = $now->copy()->startOfMonth();
         $endOfMonth = $now->copy()->endOfMonth();
 
-        $masuk = Booking::query();
-        $keluar = Transaction::query();
+        $masukBase = Booking::query();
+        $keluarBase = Transaction::query();
 
         if ($user->can('admin-local') || $user->can('admin-global')) {
-            $masuk->whereHas('unit', function ($q) use ($user) {
+            $masukBase->whereHas('unit', function ($q) use ($user) {
                 $q->where('appartement_id', $user->appartement_id);
             });
 
-            $keluar->whereHas('user', function ($q) use ($user) {
+            $keluarBase->whereHas('user', function ($q) use ($user) {
                 $q->where('appartement_id', $user->appartement_id);
             });
         }
 
-        $tf = $masuk->whereBetween('tanggal', [$startOfMonth, $endOfMonth])->sum('harga_transfer');
-        $cash = $masuk->whereBetween('tanggal', [$startOfMonth, $endOfMonth])->sum('harga_cash');
-        $income = $tf + $cash;
-        $expense = $keluar->whereBetween('tanggal', [$startOfMonth, $endOfMonth])->sum('harga');
-        $cash_pengeluaran = $keluar->whereBetween('tanggal', [$startOfMonth, $endOfMonth])->where('tipe_pembayaran', 'cash')->sum('harga');
+        // Clone dan beri kondisi masing-masing
+        $masukQuery = (clone $masukBase)->whereBetween('tanggal', [$startOfMonth, $endOfMonth]);
+        $keluarQuery = (clone $keluarBase)->whereBetween('tanggal', [$startOfMonth, $endOfMonth]);
 
-        $todayBooking = $masuk->count();
+        $tf = (clone $masukQuery)->sum('harga_transfer');
+        $cash = (clone $masukQuery)->sum('harga_cash');
+        $income = $tf + $cash;
+
+        $expense = (clone $keluarQuery)->sum('harga');
+        $cash_pengeluaran = (clone $keluarQuery)->where('tipe_pembayaran', 'cash')->sum('harga');
+        $tf_pengeluaran = (clone $keluarQuery)->where('tipe_pembayaran', 'transfer')->sum('harga');
+
+        $todayBooking = (clone $masukQuery)->count();
         $laba = $income - $expense;
 
         return [
-            Card::make('Booking Bulan Ini', $todayBooking)
+            Card::make('Total Booking Bulan Ini', $todayBooking)
                 ->description($now->format('M Y'))
                 ->color('info'),
 
-            Card::make('Uang Masuk Bulan Ini', 'Rp ' . number_format($income, 0, ',', '.'))
+            Card::make('Total Uang Masuk Bulan Ini', 'Rp ' . number_format($income, 0, ',', '.'))
                 ->color('success'),
 
-            Card::make('Uang Keluar Bulan Ini', 'Rp ' . number_format($expense, 0, ',', '.'))
+            Card::make('Total Uang Keluar Bulan Ini', 'Rp ' . number_format($expense, 0, ',', '.'))
                 ->color('warning'),
 
-            Card::make('Laba Bulan Ini', 'Rp ' . number_format($laba, 0, ',', '.'))
+            Card::make('Total Laba Bulan Ini', 'Rp ' . number_format($laba, 0, ',', '.'))
                 ->description($laba >= 0 ? 'Untung' : 'Rugi')
                 ->descriptionColor($laba >= 0 ? 'success' : 'danger'),
 
-            Card::make('Cash Bulan Ini', 'Rp ' . number_format($cash - $cash_pengeluaran, 0, ',', '.'))
-                ->color('Primary'),
+            Card::make('Total Uang Cash Bulan Ini', 'Rp ' . number_format($cash - $cash_pengeluaran, 0, ',', '.'))
+                ->color('primary'),
 
+            Card::make('Total Uang Transfer Bulan Ini', 'Rp ' . number_format($tf - $tf_pengeluaran, 0, ',', '.'))
+                ->color('primary'),
         ];
     }
 
