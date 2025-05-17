@@ -121,6 +121,7 @@ class TransactionResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultSort('created_at', direction: 'desc')
             ->query(
                 static::getEloquentQuery()
                     ->with(['unit.appartement', 'user'])

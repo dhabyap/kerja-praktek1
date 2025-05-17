@@ -85,6 +85,7 @@ class BookingResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultSort('created_at', direction: 'desc') // 🆕 Menampilkan data terbaru di atas
             ->columns([
                 TextColumn::make('nama')->searchable()->sortable(),
                 TextColumn::make('tanggal')->date()->sortable(),
