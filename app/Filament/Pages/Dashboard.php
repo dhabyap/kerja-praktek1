@@ -72,5 +72,15 @@ class Dashboard extends Page
         ];
     }
 
+    public static function getRouteName(?string $panel = null): string
+    {
+        return 'filament.admin.pages.custom-dashboard';
+    }
+
+
+    public static function getSlug(): string
+    {
+        return 'custom-dashboard';
+    }
 
 }

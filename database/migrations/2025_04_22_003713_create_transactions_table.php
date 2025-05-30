@@ -21,7 +21,7 @@ return new class extends Migration {
             $table->foreignId('unit_id')->nullable();
             $table->integer('harga');
             $table->enum('tipe_pembayaran', ['cash','transfer'])->default('cash');
-
+            $table->softDeletes();
             $table->timestamps();
         });
     }

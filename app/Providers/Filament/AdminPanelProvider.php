@@ -29,6 +29,11 @@ class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
+        Filament::registerRenderHook(
+            'head.start',
+            fn(): string => '<link rel="icon" type="image/png" href="' . asset('storage/logo/ges-logo.jpg') . '" />'
+        );
+
         return $panel
             ->default()
             ->homeUrl('/admin/dashboard')
@@ -36,8 +41,9 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => '#5292b3',
             ])
+            ->brandName('Ges Property')
             ->pages([
                 Pages\Dashboard::class,
             ])
@@ -69,7 +75,6 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
             ]);
     }
-
 
     // protected function getCustomNavigationItems(): array
     // {
