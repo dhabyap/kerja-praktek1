@@ -44,6 +44,7 @@ class AdminPanelProvider extends PanelProvider
                 'primary' => '#5292b3',
             ])
             ->brandName('Ges Property')
+            ->favicon(asset('logo/ges-logo.jpg'))
             ->pages([
                 Pages\Dashboard::class,
             ])
