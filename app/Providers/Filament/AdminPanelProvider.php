@@ -29,11 +29,6 @@ class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
-        Filament::registerRenderHook(
-            'head.start',
-            fn(): string => '<link rel="icon" type="image/png" href="' . asset('storage/logo/ges-logo.jpg') . '" />'
-        );
-
         return $panel
             ->default()
             ->homeUrl('/admin/dashboard')
