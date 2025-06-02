@@ -31,7 +31,3 @@ aside.fi-sidebar svg {
 .fi-sidebar nav a:hover {
     @apply bg-[#475569] text-white rounded-md;
 }
-
-.fi-topbar .fi-theme-switcher {
-    display: none !important;
-}

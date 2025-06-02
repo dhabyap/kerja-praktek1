@@ -40,6 +40,8 @@ class AdminPanelProvider extends PanelProvider
                 'primary' => '#5292b3',
             ])
             ->viteTheme('resources/css/filament/admin/theme.css')
+            ->darkMode(true)
+            ->defaultThemeMode(ThemeMode::Dark)
             ->brandName('Ges Property')
             ->favicon(asset('logo/ges-logo.jpg'))
             ->pages([
