@@ -19,11 +19,17 @@
     <div class="mt-6">
         @livewire(\App\Filament\Widgets\DashboardOverview::class, ['filterMonth' => $filterMonth, 'filterYear' =>
         $filterYear])
+    </div>
+    <div class="mt-6">
         @livewire(\App\Filament\Widgets\BookingChart::class, ['filterMonth' => $filterMonth, 'filterYear' =>
         $filterYear])
+    </div>
+    <div class="mt-2">
         @foreach ($appartements as $appartement)
-        @livewire(\App\Filament\Widgets\AppartementChart::class, ['appartement' => $appartement, 'filterMonth' =>
-        $filterMonth, 'filterYear' => $filterYear])
+        <div class="mt-5">
+            @livewire(\App\Filament\Widgets\AppartementChart::class, ['appartement' => $appartement, 'filterMonth' =>
+            $filterMonth, 'filterYear' => $filterYear])
+        </div>
         @endforeach
     </div>
 </x-filament-panels::page>

@@ -1,0 +1,41 @@
+@import "../../../../vendor/filament/filament/resources/css/theme.css";
+@config 'tailwind.config.js';
+
+
+html {
+    color-scheme: dark;
+}
+
+/* Sidebar Gulsian-Style */
+aside.fi-sidebar {
+    @apply bg-gradient-to-b from-[#364864] to-[#0f172a] text-white shadow-xl;
+}
+
+/* Header branding/logo */
+aside.fi-sidebar .fi-sidebar-header {
+    @apply bg-[#1e293b] text-white;
+}
+
+/* Icon warna putih */
+aside.fi-sidebar svg {
+    @apply text-white;
+}
+
+/* Teks menu default (non-aktif) */
+.fi-sidebar nav a {
+    @apply text-white;
+}
+
+/* Warna teks item aktif */
+.fi-sidebar .fi-active > a {
+    @apply bg-[#334155] text-white font-semibold rounded-md;
+}
+
+/* Hover efek menu */
+.fi-sidebar nav a:hover {
+    @apply bg-[#475569] text-white rounded-md;
+}
+
+.fi-topbar .fi-theme-switcher {
+    display: none !important;
+}

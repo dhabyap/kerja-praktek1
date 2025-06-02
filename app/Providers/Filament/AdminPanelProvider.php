@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use Filament\Enums\ThemeMode;
 use Filament\Panel;
 use Filament\Pages;
 use Filament\PanelProvider;
@@ -38,6 +39,9 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => '#5292b3',
             ])
+            ->viteTheme('resources/css/filament/admin/theme.css')
+            ->darkMode(true)
+            ->defaultThemeMode(ThemeMode::Dark)
             ->brandName('Ges Property')
             ->favicon(asset('logo/ges-logo.jpg'))
             ->pages([
