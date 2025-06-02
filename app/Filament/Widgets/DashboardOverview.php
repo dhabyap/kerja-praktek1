@@ -7,19 +7,45 @@ use App\Models\Transaction;
 use Carbon\Carbon;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Card;
-use Filament\Widgets\ChartWidget;
-use Filament\Forms\Components\Charts\Chart;
-use Filament\Forms\Components\Charts\ChartSeries;
 
 class DashboardOverview extends BaseWidget
 {
+    public ?int $filterMonth = null;
+    public ?int $filterYear = null;
+
+    public function filterData()
+    {
+        $this->dispatchBrowserEvent('refresh-widgets');
+    }
+    protected $listeners = ['refreshComponent' => '$refresh'];
+
+    public function getListeners()
+    {
+        return [
+            'refreshComponent' => '$refresh',
+            'refresh-widgets' => '$refresh',
+        ];
+    }
+
+    public function mount()
+    {
+        $this->filterMonth = request()->query('filterMonth') ?? now()->month;
+        $this->filterYear = request()->query('filterYear') ?? now()->year;
+    }
+
     protected function getCards(): array
     {
         $user = auth()->user();
 
         $now = Carbon::now();
-        $startOfMonth = $now->copy()->startOfMonth();
-        $endOfMonth = $now->copy()->endOfMonth();
+
+        $startOfMonth = Carbon::createFromDate($this->filterYear, $this->filterMonth, 1)->startOfMonth()->toDateString();
+        $endOfMonth = Carbon::createFromDate($this->filterYear, $this->filterMonth, 1)->endOfMonth()->toDateString();
+
+        $bulanTahun = Carbon::createFromDate(request()->query('filterYear', now()->year), request()->query(
+            'filterMonth',
+            now()->month
+        ))->translatedFormat('F Y');
 
         $masukBase = Booking::query();
         $keluarBase = Transaction::query();
@@ -34,7 +60,6 @@ class DashboardOverview extends BaseWidget
             });
         }
 
-        // Clone dan beri kondisi masing-masing
         $masukQuery = (clone $masukBase)->whereBetween('tanggal', [$startOfMonth, $endOfMonth]);
         $keluarQuery = (clone $keluarBase)->whereBetween('tanggal', [$startOfMonth, $endOfMonth]);
 
@@ -50,25 +75,25 @@ class DashboardOverview extends BaseWidget
         $laba = $income - $expense;
 
         return [
-            Card::make('Total Booking Bulan Ini', $todayBooking)
+            Card::make('Total Booking Bulan ' . $bulanTahun, $todayBooking)
                 ->description($now->format('M Y'))
                 ->color('info'),
 
-            Card::make('Total Uang Masuk Bulan Ini', 'Rp ' . number_format($income, 0, ',', '.'))
+            Card::make('Total Uang Masuk Bulan ' . $bulanTahun, 'Rp ' . number_format($income, 0, ',', '.'))
                 ->color('success'),
 
-            Card::make('Total Uang Keluar Bulan Ini', 'Rp ' . number_format($expense, 0, ',', '.'))
+            Card::make('Total Uang Keluar Bulan ' . $bulanTahun, 'Rp ' . number_format($expense, 0, ',', '.'))
                 ->color('warning'),
 
-            Card::make('Total Laba Bulan Ini', 'Rp ' . number_format($laba, 0, ',', '.'))
+            Card::make('Total Laba Bulan ' . $bulanTahun, 'Rp ' . number_format($laba, 0, ',', '.'))
                 ->description($laba >= 0 ? 'Untung' : 'Rugi')
                 ->descriptionColor($laba >= 0 ? 'success' : 'danger'),
 
-            Card::make('Total Uang Cash Bulan Ini', 'Rp ' . number_format($cash - $cash_pengeluaran, 0, ',', '.'))
+            Card::make('Total Uang Cash Bulan ' . $bulanTahun, 'Rp ' . number_format($cash - $cash_pengeluaran, 0, ',', '.'))
                 ->description(number_format($cash, 0, ',', '.') . ' - ' . number_format($cash_pengeluaran, 0, ',', '.'))
                 ->color('primary'),
 
-            Card::make('Total Uang Transfer Bulan Ini', 'Rp ' . number_format($tf - $tf_pengeluaran, 0, ',', '.'))
+            Card::make('Total Uang Transfer Bulan ' . $bulanTahun, 'Rp ' . number_format($tf - $tf_pengeluaran, 0, ',', '.'))
                 ->description(number_format($tf, 0, ',', '.') . ' - ' . number_format($tf_pengeluaran, 0, ',', '.'))
                 ->color('primary'),
         ];

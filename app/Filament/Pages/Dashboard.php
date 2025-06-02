@@ -13,7 +13,6 @@ class Dashboard extends Page
     protected static ?string $navigationIcon = 'heroicon-o-home';
     protected static string $view = 'filament.pages.dashboard';
 
-
     public static function getWidgets(): array
     {
         $user = auth()->user();

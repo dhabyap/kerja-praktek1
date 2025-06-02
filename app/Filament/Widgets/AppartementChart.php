@@ -11,37 +11,49 @@ class AppartementChart extends BarChartWidget
 {
     public ?Appartement $appartement = null;
 
-    public function getHeading(): ?string
+    public ?int $filterMonth = null;
+    public ?int $filterYear = null;
+
+    public function mount(): void
     {
-        return $this->appartement
-            ? 'Transaksi Apartemen ' . $this->appartement->nama
-            : 'Grafik Transaksi';
+        $this->filterMonth = request()->query('filterMonth') ?? now()->month;
+        $this->filterYear = request()->query('filterYear') ?? now()->year;
+
+        static::$heading = 'Grafik Transaksi Apartemen ' . ($this->appartement ? $this->appartement->nama . ' ' : '')
+            . Carbon::create($this->filterYear, $this->filterMonth)->translatedFormat('F Y');
     }
 
+    public function getHeading(): ?string
+    {
+        return static::$heading;
+    }
 
     protected function getData(): array
     {
-        if (!$this->appartement)
-            return [];
+        if (!$this->appartement) {
+            return [
+                'labels' => [],
+                'datasets' => [],
+            ];
+        }
 
-        $now = Carbon::now();
-        $startOfMonth = $now->copy()->startOfMonth();
-        $endOfMonth = $now->copy()->endOfMonth();
+        $startOfMonth = Carbon::create($this->filterYear, $this->filterMonth, 1)->startOfMonth();
+        $endOfMonth = Carbon::create($this->filterYear, $this->filterMonth, 1)->endOfMonth();
 
         $labels = [];
         $dataMasuk = [];
         $dataKeluar = [];
 
-        for ($date = $startOfMonth->copy(); $date <= $endOfMonth; $date->addDay()) {
+        for ($date = $startOfMonth->copy(); $date->lte($endOfMonth); $date->addDay()) {
             $labels[] = $date->format('d M');
 
             $cash = Booking::whereDate('tanggal', $date)
                 ->whereHas('unit', fn($q) => $q->where('appartement_id', $this->appartement->id))
-                ->sum(\DB::raw('harga_cash'));
+                ->sum('harga_cash');
 
             $tf = Booking::whereDate('tanggal', $date)
                 ->whereHas('unit', fn($q) => $q->where('appartement_id', $this->appartement->id))
-                ->sum(\DB::raw('harga_transfer'));
+                ->sum('harga_transfer');
 
             $keluar = Transaction::whereDate('tanggal', $date)
                 ->whereHas('user', fn($q) => $q->where('appartement_id', $this->appartement->id))

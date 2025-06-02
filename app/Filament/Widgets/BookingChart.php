@@ -8,34 +8,51 @@ use Filament\Widgets\ChartWidget;
 
 class BookingChart extends ChartWidget
 {
-    protected static ?string $heading = null; // akan kita atur secara dinamis
+    public ?int $filterMonth = null;
+    public ?int $filterYear = null;
 
-    public function __construct()
+    protected static ?string $heading = null;
+    protected $listeners = ['refreshComponent' => '$refresh'];
+
+    public function getListeners()
     {
-        // Set heading saat instance dibuat
-        static::$heading = 'Grafik Jumlah Booking ' . Carbon::now()->translatedFormat('F Y') . ' per Unit';
+        return [
+            'refreshComponent' => '$refresh',
+            'refresh-widgets' => '$refresh',
+        ];
+    }
+
+    public function mount(): void
+    {
+        $this->filterMonth = request()->query('filterMonth') ?? now()->month;
+        $this->filterYear = request()->query('filterYear') ?? now()->year;
+    
+        static::$heading = 'Grafik Jumlah Booking ' . Carbon::create($this->filterYear, $this->filterMonth)->translatedFormat('F Y') . ' per Unit';
     }
 
     protected function getData(): array
     {
         $user = auth()->user();
-        $now = Carbon::now();
-        $startOfMonth = $now->copy()->startOfMonth();
-        $endOfMonth = $now->copy()->endOfMonth();
-        $bookingQuery = Booking::with('unit')
-            ->whereBetween('tanggal', [$startOfMonth, $endOfMonth]);
 
+        $startOfMonth = Carbon::createFromDate($this->filterYear, $this->filterMonth, 1)->startOfMonth();
+        $endOfMonth = $startOfMonth->copy()->endOfMonth();
+
+        $bookingQuery = Booking::with('unit')
+            ->whereBetween('tanggal', [$startOfMonth->toDateString(), $endOfMonth->toDateString()]);
+
+        // Filter berdasarkan hak akses user
         if ($user->can('admin-local') || $user->can('admin-global')) {
             $bookingQuery->whereHas('unit', function ($q) use ($user) {
                 $q->where('appartement_id', $user->appartement_id);
             });
-
         }
 
+        // Group berdasarkan unit
         $bookings = $bookingQuery->get()
             ->filter(fn($b) => $b->unit)
             ->groupBy('unit_id');
 
+        // Siapkan data untuk chart
         $labels = [];
         $data = [];
         $backgroundColors = [];
@@ -65,7 +82,7 @@ class BookingChart extends ChartWidget
         foreach ($bookings as $unitId => $group) {
             $unitName = $group->first()->unit->nama ?? 'Unit Tidak Diketahui';
             $labels[] = $unitName;
-            $data[] = count($group);
+            $data[] = $group->count();
             $backgroundColors[] = $predefinedColors[$i % count($predefinedColors)];
             $borderColors[] = $predefinedBorders[$i % count($predefinedBorders)];
             $i++;
@@ -75,7 +92,7 @@ class BookingChart extends ChartWidget
             'labels' => $labels,
             'datasets' => [
                 [
-                    'label' => 'Total Booking ' . $now->translatedFormat('F Y'),
+                    'label' => 'Total Booking ' . Carbon::create($this->filterYear, $this->filterMonth)->translatedFormat('F Y'),
                     'data' => $data,
                     'backgroundColor' => $backgroundColors,
                     'borderColor' => $borderColors,
@@ -85,10 +102,8 @@ class BookingChart extends ChartWidget
         ];
     }
 
-
     protected function getType(): string
     {
         return 'bar';
     }
-
 }
