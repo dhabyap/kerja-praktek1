@@ -2,10 +2,6 @@
 @config 'tailwind.config.js';
 
 
-html {
-    color-scheme: dark;
-}
-
 /* Sidebar Gulsian-Style */
 aside.fi-sidebar {
     @apply bg-gradient-to-b from-[#364864] to-[#0f172a] text-white shadow-xl;
