@@ -11,23 +11,15 @@ class BookingChart extends ChartWidget
     public ?int $filterMonth = null;
     public ?int $filterYear = null;
 
-    protected static ?string $heading = null;
-    protected $listeners = ['refreshComponent' => '$refresh'];
-
-    public function getListeners()
+    public function getHeading(): ?string
     {
-        return [
-            'refreshComponent' => '$refresh',
-            'refresh-widgets' => '$refresh',
-        ];
+        return 'Grafik Jumlah Booking ' . Carbon::create($this->filterYear, $this->filterMonth)->translatedFormat('F Y') . ' per Unit';
     }
 
     public function mount(): void
     {
         $this->filterMonth = request()->query('filterMonth') ?? now()->month;
         $this->filterYear = request()->query('filterYear') ?? now()->year;
-    
-        static::$heading = 'Grafik Jumlah Booking ' . Carbon::create($this->filterYear, $this->filterMonth)->translatedFormat('F Y') . ' per Unit';
     }
 
     protected function getData(): array
@@ -40,14 +32,12 @@ class BookingChart extends ChartWidget
         $bookingQuery = Booking::with('unit')
             ->whereBetween('tanggal', [$startOfMonth->toDateString(), $endOfMonth->toDateString()]);
 
-        // Filter berdasarkan hak akses user
         if ($user->can('admin-local') || $user->can('admin-global')) {
             $bookingQuery->whereHas('unit', function ($q) use ($user) {
                 $q->where('appartement_id', $user->appartement_id);
             });
         }
 
-        // Group berdasarkan unit
         $bookings = $bookingQuery->get()
             ->filter(fn($b) => $b->unit)
             ->groupBy('unit_id');

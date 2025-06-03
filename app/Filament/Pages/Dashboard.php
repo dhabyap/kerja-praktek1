@@ -6,7 +6,6 @@ use App\Filament\Widgets\BookingChart;
 use App\Filament\Widgets\DashboardOverview;
 use App\Models\Appartement;
 use Filament\Pages\Page;
-use Livewire\Livewire;
 
 class Dashboard extends Page
 {
@@ -28,9 +27,7 @@ class Dashboard extends Page
         $appartements = $appartementsQuery->get();
 
         $charts = $appartements->map(function ($appartement) {
-            return Livewire::mount(AppartementChart::class, [
-                'appartement' => $appartement,
-            ])->getId();
+            return AppartementChart::make(['appartement' => $appartement]);
         })->toArray();
 
         return array_merge(

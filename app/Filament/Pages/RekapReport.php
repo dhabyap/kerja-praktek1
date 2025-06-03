@@ -27,18 +27,6 @@ class RekapReport extends Page
     public ?int $filterMonth = null;
     public ?int $filterYear = null;
 
-    protected $listeners = ['updateFilter'];
-
-
-
-    public function updateFilter($month, $year)
-    {
-        $this->filterMonth = $month;
-        $this->filterYear = $year;
-
-        $this->loadChartData();
-    }
-
     public function mount()
     {
         $this->filterMonth = request()->query('filterMonth', now()->month);
@@ -81,9 +69,7 @@ class RekapReport extends Page
         $appartements = $appartementsQuery->get();
 
         $charts = $appartements->map(function ($appartement) {
-            return Livewire::mount(AppartementChart::class, [
-                'appartement' => $appartement,
-            ])->getId();
+            return AppartementChart::make(['appartement' => $appartement]);
         })->toArray();
 
         return array_merge(
@@ -117,7 +103,6 @@ class RekapReport extends Page
             'filterYear' => $this->filterYear,
         ]));
     }
-
 
     public static function canViewAny(): bool
     {

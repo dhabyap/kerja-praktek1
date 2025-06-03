@@ -13,20 +13,6 @@ class DashboardOverview extends BaseWidget
     public ?int $filterMonth = null;
     public ?int $filterYear = null;
 
-    public function filterData()
-    {
-        $this->dispatchBrowserEvent('refresh-widgets');
-    }
-    protected $listeners = ['refreshComponent' => '$refresh'];
-
-    public function getListeners()
-    {
-        return [
-            'refreshComponent' => '$refresh',
-            'refresh-widgets' => '$refresh',
-        ];
-    }
-
     public function mount()
     {
         $this->filterMonth = request()->query('filterMonth') ?? now()->month;
