@@ -20,6 +20,7 @@ return new class extends Migration
             $table->foreignId('level_id')->default('1')->constrained()->nullable();
             $table->foreignId('appartement_id')->default('1')->nullable();
             $table->rememberToken();
+            $table->softDeletes();
             $table->timestamps();
         });
     }
