@@ -84,6 +84,8 @@ class BookingResource extends Resource
 
     public static function table(Table $table): Table
     {
+        $user = Filament::auth()->user();
+
         return $table
             ->defaultSort('created_at', direction: 'desc') // 🆕 Menampilkan data terbaru di atas
             ->columns([
@@ -128,6 +130,28 @@ class BookingResource extends Resource
                         return $query
                             ->when($data['tanggal_from'], fn($q, $from) => $q->whereDate('tanggal', '>=', $from))
                             ->when($data['tanggal_until'], fn($q, $until) => $q->whereDate('tanggal', '<=', $until));
+                    }),
+
+                Filter::make('appartment_id')
+                    ->form([
+                        Select::make('appartment_id') // perbaiki nama key-nya agar konsisten
+                            ->label('Apartment')
+                            ->options(function () use ($user) {
+                                if ($user->level_id === 1) {
+                                    return Appartement::pluck('nama', 'id');
+                                } else {
+                                    return Appartement::where('id', $user->appartment_id)->pluck('nama', 'id');
+                                }
+                            })
+                            ->searchable()
+                            ->preload(),
+                    ])
+                    ->query(function ($query, array $data) {
+                        return $query->when($data['appartment_id'], function ($q, $appartementId) {
+                            $q->whereHas('unit', function ($unitQuery) use ($appartementId) {
+                                $unitQuery->where('appartement_id', $appartementId);
+                            });
+                        });
                     }),
 
                 Filter::make('unit_id')
