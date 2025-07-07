@@ -80,6 +80,10 @@ class DashboardOverview extends BaseWidget
             Card::make('Total Uang Transfer Bulan ' . $bulanTahun, 'Rp ' . number_format($tf - $tf_pengeluaran, 0, ',', '.'))
                 ->description(number_format($tf, 0, ',', '.') . ' - ' . number_format($tf_pengeluaran, 0, ',', '.'))
                 ->color('primary'),
+
+            Card::make('Total Uang Cash dan Transfer Bulan ' . $bulanTahun, 'Rp ' . number_format(($cash - $cash_pengeluaran) + ($tf - $tf_pengeluaran), 0, ',', '.'))
+                ->description(number_format($cash - $cash_pengeluaran, 0, ',', '.') . ' + ' . number_format($tf - $tf_pengeluaran, 0, ',', '.'))
+                ->color('primary'),
         ];
     }
 }
