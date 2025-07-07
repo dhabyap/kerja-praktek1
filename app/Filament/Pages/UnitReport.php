@@ -166,11 +166,11 @@ class UnitReport extends Page implements Tables\Contracts\HasTable
 
 
         if (auth()->user()->can('admin-local') || auth()->user()->can('admin-global')) {
-            $query->where('id', auth()->user()->appartement_id);
+            $query->where('appartement_id', auth()->user()->appartement_id);
         }
 
         if ($this->filterAppartement) {
-            $query->where('id', $this->filterAppartement);
+            $query->where('appartement_id', $this->filterAppartement);
         }
 
         return $query;
@@ -257,3 +257,4 @@ class UnitReport extends Page implements Tables\Contracts\HasTable
         return auth()->user()->can('super-admin') || auth()->user()->can('admin-global');
     }
 }
+    
