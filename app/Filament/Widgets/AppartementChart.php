@@ -18,14 +18,12 @@ class AppartementChart extends BarChartWidget
     {
         $this->filterMonth = request()->query('filterMonth') ?? now()->month;
         $this->filterYear = request()->query('filterYear') ?? now()->year;
-
-        static::$heading = 'Grafik Transaksi Apartemen ' . ($this->appartement ? $this->appartement->nama . ' ' : '')
-            . Carbon::create($this->filterYear, $this->filterMonth)->translatedFormat('F Y');
     }
 
     public function getHeading(): ?string
     {
-        return static::$heading;
+        return 'Grafik Transaksi Apartemen ' . ($this->appartement ? $this->appartement->nama . ' ' : '')
+            . Carbon::create($this->filterYear, $this->filterMonth)->translatedFormat('F Y');
     }
 
     protected function getData(): array

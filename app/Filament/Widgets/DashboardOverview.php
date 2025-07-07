@@ -28,10 +28,8 @@ class DashboardOverview extends BaseWidget
         $startOfMonth = Carbon::createFromDate($this->filterYear, $this->filterMonth, 1)->startOfMonth()->toDateString();
         $endOfMonth = Carbon::createFromDate($this->filterYear, $this->filterMonth, 1)->endOfMonth()->toDateString();
 
-        $bulanTahun = Carbon::createFromDate(request()->query('filterYear', now()->year), request()->query(
-            'filterMonth',
-            now()->month
-        ))->translatedFormat('F Y');
+        // Fix: Gunakan nilai dari properti class, bukan dari request langsung
+        $bulanTahun = Carbon::createFromDate($this->filterYear, $this->filterMonth, 1)->translatedFormat('F Y');
 
         $masukBase = Booking::query();
         $keluarBase = Transaction::query();
@@ -84,5 +82,4 @@ class DashboardOverview extends BaseWidget
                 ->color('primary'),
         ];
     }
-
 }
